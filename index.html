@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Assisted Customisation Reconciliation — Executive Board Defense</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#E4E8EE;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-size:16px}
+:root{
+  --ink:#0F1729;--ink-secondary:#4A5568;--ink-muted:#718096;--line:#E2E8F0;
+  --surface:#F7F9FC;--surface-2:#EEF2F7;--navy:#1E3A5F;--navy-deep:#0F2440;
+  --gold:#9A7B2F;--gold-light:#C5A059;--red:#B42318;--green:#1D6F4E;--amber:#B45309;
+}
+
+/* ── 16:9 VIEWPORT ── */
+.stage{width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:linear-gradient(145deg,#DDE2EA 0%,#EEF1F5 50%,#E4E8EE 100%)}
+.deck{width:min(calc(100vw - 48px),calc((100vh - 72px) * 16 / 9));height:min(calc(100vh - 72px),calc((100vw - 48px) * 9 / 16));position:relative;overflow:hidden;background:#FFFFFF;box-shadow:0 32px 96px rgba(15,23,42,.14),0 0 0 1px rgba(15,23,42,.04);border-radius:2px}
+
+/* ── SLIDES ── */
+.slides{width:100%;height:100%;position:relative}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;visibility:hidden;transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .55s cubic-bezier(.4,0,.2,1);transform:translateX(24px);background:var(--slide-bg,#FFFFFF)}
+.slide.active{opacity:1;visibility:visible;transform:translateX(0);z-index:2}
+.slide.exit{opacity:0;transform:translateX(-24px);z-index:1}
+
+/* ── SUBTLE ENTER ANIMATIONS ── */
+@media (prefers-reduced-motion: no-preference){
+  .slide.active:not(.slide-verdict) .slide-header{animation:fadeUp .55s cubic-bezier(.4,0,.2,1) both}
+  .slide.active:not(.slide-verdict) .slide-body{animation:fadeUp .55s cubic-bezier(.4,0,.2,1) .08s both}
+  .slide.active:not(.slide-timeline) .year-col,.slide.active:not(.slide-solution) .flow-step,.slide.active:not(.slide-metrics):not(.slide-solution) .metric-box,.slide.active .panel,.slide.active .panel-accent,.slide.active .compare-col,.slide.active:not(.slide-research) .ro-card,.slide.active .chain-col,.slide.active .asym-panel,.slide.active:not(.slide-risk) .risk-card,.slide.active:not(.slide-roadmap) .rm-phase,.slide.active:not(.slide-roadmap) .tranche{animation:fadeUp .5s cubic-bezier(.4,0,.2,1) both}
+  .slide.active:not(.slide-solution) .flow-step:nth-child(1){animation-delay:.06s}
+  .slide.active:not(.slide-solution) .flow-step:nth-child(2){animation-delay:.12s}
+  .slide.active:not(.slide-solution) .flow-step:nth-child(3){animation-delay:.18s}
+  .slide.active:not(.slide-solution) .flow-step:nth-child(4){animation-delay:.24s}
+  .slide.active:not(.slide-solution) .flow-step:nth-child(5){animation-delay:.30s}
+  .slide.active .crisis-callout{animation:fadeUp .55s cubic-bezier(.4,0,.2,1) .65s both}
+
+  /* Slide 12 — verdict typewriter (recommendation lines only) */
+  .slide-verdict.active .verdict-title,.slide-verdict.active .approve-box,.slide-verdict.active .term-chip{animation:none!important}
+  .rec-phrase{display:block;min-height:1.55em;color:rgba(255,255,255,.65);opacity:0;transform-origin:center center}
+  .rec-phrase.visible{opacity:1}
+  .rec-phrase.rec-primary{color:#FFFFFF;font-weight:700;font-size:clamp(22px,2.2vw,32px);letter-spacing:-.01em}
+  .rec-phrase.rec-emphasis{color:var(--gold-light);font-weight:600;font-size:clamp(19px,1.9vw,26px)}
+  .rec-phrase.typing::after{content:'|';margin-left:2px;color:var(--gold-light);animation:verdictCursor .85s step-end infinite}
+  .rec-phrase.impact-primary{animation:verdictPopBig .6s cubic-bezier(.34,1.2,.64,1) forwards}
+  .rec-phrase.impact-emphasis{animation:verdictPopMed .52s cubic-bezier(.34,1.12,.64,1) forwards}
+  .rec-phrase.impact{animation:verdictPop .48s cubic-bezier(.4,0,.2,1) forwards}
+
+  /* Slide 5 — AI-Assisted Reconciliation steps one by one */
+  .slide-solution.active .flow-step{opacity:0;transform:translateY(18px) scale(.94);animation:flowStepIn .52s cubic-bezier(.34,1.1,.64,1) forwards}
+  .slide-solution.active .flow-step:nth-child(1){animation-delay:.22s}
+  .slide-solution.active .flow-step:nth-child(2){animation-delay:.52s}
+  .slide-solution.active .flow-step:nth-child(3){animation-delay:.82s}
+  .slide-solution.active .flow-step:nth-child(4){animation-delay:1.12s}
+  .slide-solution.active .flow-step:nth-child(5){animation-delay:1.42s}
+  .slide-solution.active .flow-step .flow-num{transform:scale(0);animation:flowNumPop .42s cubic-bezier(.34,1.2,.64,1) forwards}
+  .slide-solution.active .flow-step:nth-child(1) .flow-num{animation-delay:.22s}
+  .slide-solution.active .flow-step:nth-child(2) .flow-num{animation-delay:.52s}
+  .slide-solution.active .flow-step:nth-child(3) .flow-num{animation-delay:.82s}
+  .slide-solution.active .flow-step:nth-child(4) .flow-num{animation-delay:1.12s}
+  .slide-solution.active .flow-step:nth-child(5) .flow-num{animation-delay:1.42s}
+  .slide-solution.active .metric-box{opacity:0;transform:translateY(14px);animation:fadeUp .48s cubic-bezier(.4,0,.2,1) forwards}
+  .slide-solution.active .metric-box:nth-child(1){animation-delay:2s}
+  .slide-solution.active .metric-box:nth-child(2){animation-delay:2.12s}
+  .slide-solution.active .metric-box:nth-child(3){animation-delay:2.24s}
+  .slide-solution.active .metric-box:nth-child(4){animation-delay:2.36s}
+
+  /* Slide 2 — bars rise year by year */
+  .slide-timeline.active .stack-block{animation:barRise .55s cubic-bezier(.34,1.15,.64,1) forwards}
+  .slide-timeline.active .year-col:nth-child(1) .stack-block{animation-delay:.15s}
+  .slide-timeline.active .year-col:nth-child(2) .stack-block{animation-delay:.28s}
+  .slide-timeline.active .year-col:nth-child(3) .stack-block{animation-delay:.41s}
+  .slide-timeline.active .year-col:nth-child(4) .stack-block{animation-delay:.54s}
+  .slide-timeline.active .year-col:nth-child(5) .stack-block{animation-delay:.67s}
+
+  /* Slide 3 — key metric outline pulse */
+  .slide-metrics.active .key-stat{animation:outlinePulse .9s cubic-bezier(.4,0,.2,1) both}
+  .slide-metrics.active .key-stat:nth-child(1){animation-delay:.25s}
+  .slide-metrics.active .key-stat:nth-child(2){animation-delay:.4s}
+  .slide-metrics.active .key-stat:nth-child(3){animation-delay:.55s}
+
+  /* Slide 4 — ✕ and ✓ marks pop in */
+  .slide-compare.active .compare-list .icon{opacity:0;transform:scale(.4)}
+  .slide-compare.active .compare-col.fail .compare-list li:nth-child(1) .icon{animation:markPop .45s cubic-bezier(.34,1.2,.64,1) .2s forwards}
+  .slide-compare.active .compare-col.fail .compare-list li:nth-child(2) .icon{animation:markPop .45s cubic-bezier(.34,1.2,.64,1) .32s forwards}
+  .slide-compare.active .compare-col.fail .compare-list li:nth-child(3) .icon{animation:markPop .45s cubic-bezier(.34,1.2,.64,1) .44s forwards}
+  .slide-compare.active .compare-col.win .compare-list li:nth-child(1) .icon{animation:markPop .45s cubic-bezier(.34,1.2,.64,1) .28s forwards}
+  .slide-compare.active .compare-col.win .compare-list li:nth-child(2) .icon{animation:markPop .45s cubic-bezier(.34,1.2,.64,1) .4s forwards}
+  .slide-compare.active .compare-col.win .compare-list li:nth-child(3) .icon{animation:markPop .45s cubic-bezier(.34,1.2,.64,1) .52s forwards}
+
+  /* Slide 9 — dashboard */
+  .slide-dashboard.active .vd-fade{opacity:0;animation:fadeIn .55s cubic-bezier(.4,0,.2,1) forwards}
+  .slide-dashboard.active .vd-fade-1{animation-delay:.05s}
+  .slide-dashboard.active .vd-fade-2{animation-delay:.12s}
+  .slide-dashboard.active .vd-fade-3{animation-delay:.2s}
+  .slide-dashboard.active .vd-fade-4{animation-delay:.38s}
+  .slide-dashboard.active .vd-draw{stroke-dasharray:1200;stroke-dashoffset:1200;animation:drawLine 1.2s cubic-bezier(.4,0,.2,1) forwards}
+  .slide-dashboard.active .vd-draw-1{animation-delay:.3s}
+  .slide-dashboard.active .vd-draw-2{animation-delay:.42s}
+  .slide-dashboard.active .vd-draw-3,.slide-dashboard.active .vd-draw-4{animation-delay:.54s}
+
+  /* Slide 6 — sourcing score bars fill */
+  .score-fill{width:0}
+  .slide-sourcing.active .score-fill{animation:scoreFill .65s cubic-bezier(.4,0,.2,1) forwards}
+  .slide-sourcing.active .score-bar:nth-child(2) .score-fill{animation-delay:.22s}
+  .slide-sourcing.active .score-bar:nth-child(3) .score-fill{animation-delay:.34s}
+  .slide-sourcing.active .score-bar:nth-child(4) .score-fill{animation-delay:.46s}
+  .slide-sourcing.active .score-bar:nth-child(5) .score-fill{animation-delay:.58s}
+
+  /* Slide 7 — RO1–RO5 cards */
+  .slide-research.active .ro-card{opacity:0;transform:translateY(10px);animation:roReveal .5s cubic-bezier(.4,0,.2,1) forwards}
+  .slide-research.active .ro-card:nth-child(1){animation-delay:.12s}
+  .slide-research.active .ro-card:nth-child(2){animation-delay:.22s}
+  .slide-research.active .ro-card:nth-child(3){animation-delay:.32s}
+  .slide-research.active .ro-card:nth-child(4){animation-delay:.42s}
+  .slide-research.active .ro-card:nth-child(5){animation-delay:.52s}
+
+  /* Slide 10 — HIGH tags one by one */
+  .slide-risk.active .sev-high{opacity:0;transform:scale(.7);animation:tagPop .4s cubic-bezier(.34,1.15,.64,1) forwards}
+  .slide-risk.active .risk-card:nth-child(1) .sev-high{animation-delay:.28s}
+  .slide-risk.active .risk-card:nth-child(2) .sev-high{animation-delay:.48s}
+  .slide-risk.active .risk-card:nth-child(3) .sev-high{animation-delay:.68s}
+
+  /* Slide 11 — G/T stages sequential */
+  .slide-roadmap.active .rm-phase,.slide-roadmap.active .tranche{opacity:0;transform:translateY(10px);animation:stageIn .42s cubic-bezier(.4,0,.2,1) forwards}
+  .slide-roadmap.active .rm-phase:nth-child(1),.slide-roadmap.active .tranche:nth-child(1){animation-delay:.18s}
+  .slide-roadmap.active .rm-phase:nth-child(2),.slide-roadmap.active .tranche:nth-child(2){animation-delay:.32s}
+  .slide-roadmap.active .rm-phase:nth-child(3),.slide-roadmap.active .tranche:nth-child(3){animation-delay:.46s}
+  .slide-roadmap.active .rm-phase:nth-child(4),.slide-roadmap.active .tranche:nth-child(4){animation-delay:.60s}
+  .slide-roadmap.active .rm-phase:nth-child(5),.slide-roadmap.active .tranche:nth-child(5){animation-delay:.74s}
+  .slide-roadmap.active .tranche:nth-child(6){animation-delay:.88s}
+  .slide-roadmap.active .rm-bar{transform:scaleX(0);transform-origin:left center;animation:rmBarGrow .5s cubic-bezier(.4,0,.2,1) forwards}
+  .slide-roadmap.active .rm-phase:nth-child(1) .rm-bar{animation-delay:.22s}
+  .slide-roadmap.active .rm-phase:nth-child(2) .rm-bar{animation-delay:.36s}
+  .slide-roadmap.active .rm-phase:nth-child(3) .rm-bar{animation-delay:.50s}
+  .slide-roadmap.active .rm-phase:nth-child(4) .rm-bar{animation-delay:.64s}
+  .slide-roadmap.active .rm-phase:nth-child(5) .rm-bar{animation-delay:.78s}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes drawLine{to{stroke-dashoffset:0}}
+@keyframes barRise{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes outlinePulse{
+  0%{box-shadow:0 0 0 0 rgba(30,58,95,0);border-color:var(--line)}
+  40%{box-shadow:0 0 0 3px rgba(30,58,95,.12);border-color:var(--navy)}
+  100%{box-shadow:0 0 0 0 rgba(30,58,95,0);border-color:var(--line)}
+}
+@keyframes markPop{
+  0%{opacity:0;transform:scale(.35)}
+  65%{transform:scale(1.12)}
+  100%{opacity:1;transform:scale(1)}
+}
+@keyframes scoreFill{to{width:var(--fill-w)}}
+@keyframes roReveal{
+  to{opacity:1;transform:translateY(0);box-shadow:0 4px 14px rgba(30,58,95,.08)}
+}
+@keyframes tagPop{
+  0%{opacity:0;transform:scale(.7)}
+  70%{transform:scale(1.08)}
+  100%{opacity:1;transform:scale(1)}
+}
+@keyframes stageIn{
+  to{opacity:1;transform:translateY(0);border-color:var(--navy)}
+}
+@keyframes rmBarGrow{to{transform:scaleX(1)}}
+@keyframes verdictCursor{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes verdictPopBig{
+  0%{transform:scale(.82);opacity:.4}
+  45%{transform:scale(1.28);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes verdictPopMed{
+  0%{transform:scale(.88);opacity:.5}
+  50%{transform:scale(1.14);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes verdictPop{
+  0%{transform:scale(.92);opacity:.6}
+  55%{transform:scale(1.07);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes flowStepIn{
+  0%{opacity:0;transform:translateY(18px) scale(.94)}
+  65%{transform:translateY(-3px) scale(1.02)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes flowNumPop{
+  0%{transform:scale(0);opacity:0}
+  65%{transform:scale(1.14)}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes flowLineGrow{to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){
+  .score-fill{width:var(--fill-w)!important}
+  .ro-card,.sev-high,.rm-phase,.tranche,.rm-bar{opacity:1!important;transform:none!important;animation:none!important}
+  .rec-phrase{opacity:1!important;transform:none!important;animation:none!important}
+  .rec-phrase.typing::after{content:none}
+  .slide-solution.active .flow-step,.slide-solution.active .flow-step .flow-num,.slide-solution.active .metric-box{opacity:1!important;transform:none!important;animation:none!important}
+}
+
+.slide-inner{flex:1;display:flex;flex-direction:column;padding:52px 72px 44px;min-height:0;overflow:hidden}
+.slide-header{margin-bottom:28px;flex-shrink:0}
+.slide-body{flex:1;display:flex;flex-direction:column;min-height:0;justify-content:center}
+
+/* ── TOKENS ── */
+.slide{
+  --ink:#0F1729;
+  --ink-secondary:#4A5568;
+  --ink-muted:#718096;
+  --line:#E2E8F0;
+  --surface:#F7F9FC;
+  --surface-2:#EEF2F7;
+  --navy:#1E3A5F;
+  --navy-deep:#0F2440;
+  --accent:#1E3A5F;
+  --gold:#9A7B2F;
+  --gold-light:#C5A059;
+  --red:#B42318;
+  --red-bg:#FEF3F2;
+  --green:#1D6F4E;
+  --green-bg:#ECFDF5;
+  --amber:#B45309;
+  --slide-bg:#FFFFFF;
+}
+.slide.tone-alt{--slide-bg:#F7F9FC}
+.slide.tone-navy{--slide-bg:#0F2440;--ink:#FFFFFF;--ink-secondary:rgba(255,255,255,.78);--ink-muted:rgba(255,255,255,.52);--line:rgba(255,255,255,.1);--surface:rgba(255,255,255,.06);--surface-2:rgba(255,255,255,.1)}
+
+/* ── TYPOGRAPHY ── */
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+.tone-navy .eyebrow{color:var(--gold-light)}
+h1{font-size:clamp(30px,2.8vw,44px);font-weight:700;line-height:1.2;color:var(--ink);letter-spacing:-.025em}
+h2{font-size:clamp(24px,2.1vw,32px);font-weight:700;line-height:1.25;color:var(--ink);letter-spacing:-.02em}
+.lead{font-size:clamp(16px,1.2vw,18px);line-height:1.55;color:var(--ink-secondary);max-width:760px}
+.small{font-size:15px;line-height:1.5;color:var(--ink-muted)}
+.stat{font-size:clamp(26px,2.4vw,38px);font-weight:700;color:var(--navy);line-height:1}
+.tone-navy .stat{color:var(--gold-light)}
+
+/* ── LAYOUT ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:stretch}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.flex-row{display:flex;gap:20px;align-items:stretch}
+
+/* ── CARDS & PANELS ── */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:22px 24px}
+.tone-navy .panel{background:var(--surface);border-color:var(--line)}
+.panel-white{background:#FFFFFF;border:1px solid var(--line);border-radius:6px;padding:20px 22px}
+.panel-accent{border-left:3px solid var(--navy);padding-left:20px}
+.metric-box{text-align:center;padding:24px 16px;background:#FFFFFF;border:1px solid var(--line);border-radius:6px}
+.metric-box.key-stat{position:relative}
+.metric-box .val{font-size:clamp(24px,2.2vw,34px);font-weight:700;color:var(--navy);margin-bottom:4px}
+.metric-box .lbl{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-muted)}
+
+/* ── PROCESS FLOW ── */
+.flow{display:flex;align-items:flex-start;gap:0;width:100%}
+.flow-step{flex:1;text-align:center;padding:0 8px;position:relative}
+.flow-step:not(:last-child)::after{content:'';position:absolute;right:-1px;top:22px;width:24px;height:1px;background:var(--line)}
+.flow-num{width:40px;height:40px;border-radius:50%;background:var(--navy);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.flow-step h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.flow-step p{font-size:13px;line-height:1.45;color:var(--ink-muted)}
+
+/* ── TIMELINE (Slide 2 — static) ── */
+.timeline-wrap{position:relative;width:100%;padding:4px 0}
+.timeline-axis{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;height:260px;padding:0 8px;border-bottom:2px solid var(--line);position:relative}
+.timeline-axis::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:2px;background:var(--line)}
+.year-col{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0}
+.year-note{font-size:12px;color:var(--ink-muted);text-align:center;min-height:32px;line-height:1.35;margin-bottom:8px;padding:0 4px}
+.year-stack{display:flex;flex-direction:column-reverse;align-items:center;width:100%;max-width:64px;gap:2px;margin-bottom:10px}
+.stack-block{width:100%;border-radius:3px 3px 0 0;height:var(--bar-h,0);transform-origin:bottom center;transform:scaleY(0)}
+@media (prefers-reduced-motion:reduce){.stack-block{transform:scaleY(1)}}
+.stack-block.reg{background:#1E3A5F}
+.stack-block.prod{background:#4A6FA5}
+.stack-block.ops{background:#8BA4C7}
+.year-col.crisis-year .stack-block.reg,
+.year-col.crisis-year .stack-block.prod,
+.year-col.crisis-year .stack-block.ops{background:var(--red)}
+.year-label{font-size:15px;font-weight:700;color:var(--ink)}
+.year-col.crisis-year .year-label{color:var(--red)}
+.year-sub{font-size:12px;color:var(--ink-muted);margin-top:3px;text-align:center;line-height:1.3}
+.crisis-callout{margin-top:18px;padding:16px 22px;background:var(--red);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.crisis-callout strong{font-size:15px;font-weight:600;line-height:1.35;flex:1}
+.crisis-callout span{font-size:14px;opacity:.92;line-height:1.4;white-space:nowrap}
+.legend{display:flex;gap:24px;margin-top:14px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-muted)}
+.legend-swatch{width:14px;height:14px;border-radius:2px}
+
+/* ── COMPARISON (Slide 4) ── */
+.compare-col{padding:24px;border-radius:6px;height:100%}
+.compare-col.fail{background:var(--red-bg);border:1px solid #FECDCA}
+.compare-col.win{background:var(--green-bg);border:1px solid #A7F3D0}
+.compare-col h3{font-family:inherit;font-size:20px;margin-bottom:14px}
+.compare-col.fail h3{color:var(--red)}
+.compare-col.win h3{color:var(--green)}
+.compare-list{list-style:none}
+.compare-list li{font-size:15px;line-height:1.5;color:var(--ink-secondary);padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);display:flex;gap:10px;align-items:flex-start}
+.compare-list li:last-child{border-bottom:none}
+.compare-list .icon{flex-shrink:0;font-weight:700;font-size:14px}
+
+/* ── ARCHITECTURE (Slide 6) ── */
+.arch-stack{display:flex;flex-direction:column;gap:3px;width:100%}
+.arch-row{display:grid;grid-template-columns:120px 1fr 72px;align-items:center;padding:12px 16px;border:1px solid var(--line);background:#FFFFFF;transition:background .2s}
+.arch-row:first-child{border-radius:6px 6px 0 0}
+.arch-row:last-child{border-radius:0 0 6px 6px}
+.arch-row.rented{background:linear-gradient(90deg,#FEF9EE 0%,#FFFFFF 40%);border-color:#E8D5A8}
+.arch-row:hover{background:var(--surface)}
+.arch-row .layer{font-size:13px;font-weight:700;color:var(--navy);letter-spacing:.02em}
+.arch-row .desc{font-size:13px;color:var(--ink-muted);line-height:1.4;padding:0 12px}
+.arch-row .tag{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:right}
+.tag-rent{color:var(--gold)}
+.tag-own{color:var(--green)}
+.score-bar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.score-bar .label{font-size:12px;color:var(--ink-secondary);width:64px;flex-shrink:0}
+.score-bar .track{flex:1;height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.score-bar .fill{height:100%;background:var(--navy);border-radius:4px}
+.score-bar .fill.highlight{background:var(--gold-light)}
+.score-bar .num{font-size:12px;font-weight:700;color:var(--ink);width:28px;text-align:right}
+
+/* ── RESEARCH SPINE (Slide 7) ── */
+.ro-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.ro-card{padding:14px 12px;background:#FFFFFF;border:1px solid var(--line);border-radius:6px;border-top:3px solid var(--navy)}
+.ro-card .ro-id{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--gold);margin-bottom:4px}
+.ro-card h4{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;line-height:1.3}
+.ro-card p{font-size:12px;color:var(--ink-muted);line-height:1.4}
+.chain-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.chain-col{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px}
+.chain-col h4{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--navy);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.chain-item{font-size:12px;line-height:1.45;color:var(--ink-secondary);padding:5px 0;border-bottom:1px solid var(--line)}
+.chain-item:last-child{border-bottom:none}
+.chain-item strong{color:var(--ink);font-weight:600}
+
+/* ── ASYMMETRIC (Slide 8) ── */
+.asym-grid{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:stretch}
+.asym-panel{padding:28px;border-radius:6px;height:100%}
+.asym-panel.rise{background:var(--red-bg);border:1px solid #FECDCA}
+.asym-panel.bound{background:var(--green-bg);border:1px solid #A7F3D0}
+.asym-panel h3{font-family:inherit;font-size:18px;margin-bottom:16px}
+.asym-panel.rise h3{color:var(--red)}
+.asym-panel.bound h3{color:var(--green)}
+.asym-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.06);font-size:14px;color:var(--ink-secondary)}
+.asym-item:last-child{border-bottom:none}
+.asym-item .amt{font-weight:700}
+.asym-vs{display:flex;align-items:center;justify-content:center;font-family:inherit;font-size:22px;font-weight:700;color:var(--ink-muted)}
+.asym-footer{display:flex;justify-content:center;gap:32px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
+.asym-footer .item{text-align:center}
+.asym-footer .item .num{font-family:inherit;font-size:26px;font-weight:700;color:var(--navy)}
+
+/* ── VALUE DASHBOARD (Slide 9) ── */
+.value-acts{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:20px}
+.act-card{padding:22px;background:#FFFFFF;border:1px solid var(--line);border-radius:6px;position:relative;overflow:hidden}
+.act-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.act-card:nth-child(1)::before{background:var(--navy)}
+.act-card:nth-child(2)::before{background:var(--gold-light)}
+.act-card:nth-child(3)::before{background:var(--green)}
+.act-card .act-num{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--ink-muted);margin-bottom:6px}
+.act-card h4{font-family:inherit;font-size:17px;color:var(--ink);margin-bottom:8px}
+.act-card p{font-size:14px;line-height:1.5;color:var(--ink-secondary)}
+.chart-area{height:120px;position:relative;margin-top:8px}
+.chart-area svg{width:100%;height:100%}
+
+/* ── RISK TABLE (Slide 10) ── */
+.risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.risk-card{padding:18px 20px;background:#FFFFFF;border:1px solid var(--line);border-radius:6px}
+.risk-card .risk-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.risk-id{font-size:13px;font-weight:700;color:var(--navy)}
+.severity{font-size:11px;font-weight:700;letter-spacing:.06em;padding:2px 8px;border-radius:3px}
+.sev-high{background:#FEE2E2;color:var(--red)}
+.risk-card h4{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;line-height:1.35}
+.risk-card p{font-size:13px;line-height:1.5;color:var(--ink-muted)}
+.criteria-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.criteria-box{padding:14px 16px;border-radius:6px;border:1px solid var(--line);background:#FFFFFF}
+.criteria-box .type{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.criteria-box.kill .type{color:var(--red)}
+.criteria-box.pause .type{color:var(--amber)}
+.criteria-box.expand .type{color:var(--green)}
+.criteria-box p{font-size:13px;line-height:1.45;color:var(--ink-secondary)}
+
+/* ── ROADMAP (Slide 11) ── */
+.roadmap-track{display:flex;gap:0;align-items:stretch;margin-bottom:16px}
+.rm-phase{flex:1;padding:16px 12px;background:#FFFFFF;border:1px solid var(--line);position:relative;text-align:center}
+.rm-phase:first-child{border-radius:6px 0 0 6px}
+.rm-phase:last-child{border-radius:0 6px 6px 0}
+.rm-phase:not(:last-child){border-right:none}
+.rm-phase .gate{font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--gold);margin-bottom:4px}
+.rm-phase h4{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.rm-phase .dur{font-size:12px;color:var(--ink-muted);margin-bottom:8px}
+.rm-phase .cost{font-family:inherit;font-size:18px;font-weight:700;color:var(--navy)}
+.rm-bar{height:3px;background:var(--navy);margin-bottom:10px;border-radius:2px}
+.tranche-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.tranche{padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;text-align:center}
+.tranche .t-id{font-size:11px;font-weight:700;color:var(--gold);margin-bottom:2px}
+.tranche .t-amt{font-size:14px;font-weight:700;color:var(--ink)}
+.tranche .t-when{font-size:10px;color:var(--ink-muted);margin-top:2px}
+
+/* ── VERDICT (Slide 12) ── */
+.verdict-hero{text-align:center;padding:32px 40px;background:var(--navy-deep);border-radius:6px;color:#fff;margin-bottom:20px}
+.verdict-hero h2{font-family:inherit;font-size:clamp(28px,2.6vw,42px);color:var(--gold-light);margin-bottom:16px}
+.verdict-rec{font-size:clamp(17px,1.6vw,22px);line-height:1.55;max-width:680px;margin:0 auto;text-align:center}
+.approve-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px}
+.approve-box{padding:20px;border-radius:6px;border:1px solid var(--line)}
+.approve-box.yes{background:var(--green-bg);border-color:#A7F3D0}
+.approve-box.no{background:var(--red-bg);border-color:#FECDCA}
+.approve-box .head{font-size:14px;font-weight:700;margin-bottom:6px}
+.approve-box.yes .head{color:var(--green)}
+.approve-box.no .head{color:var(--red)}
+.approve-box p{font-size:14px;line-height:1.5;color:var(--ink-secondary)}
+.terms-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.term-chip{padding:10px 8px;text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:4px;font-size:12px;font-weight:600;line-height:1.35;color:var(--navy)}
+
+/* ── Q&A (Slide 13) ── */
+.qa-col{padding:28px 24px;background:#FFFFFF;border:1px solid var(--line);border-radius:6px;text-align:center;height:100%}
+.qa-col h4{font-family:inherit;font-size:18px;color:var(--ink);margin-bottom:10px}
+.qa-col p{font-size:14px;line-height:1.55;color:var(--ink-secondary)}
+.title-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 80px}
+.title-rule{width:48px;height:2px;background:var(--gold-light);margin:0 auto 28px}
+.title-meta{font-size:14px;color:var(--ink-muted);margin-top:28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+.title-meta span:not(:last-child)::after{content:'·';margin-left:12px;color:var(--line)}
+
+/* ── NAV ── */
+.nav{width:min(calc(100vw - 48px),calc((100vh - 72px) * 16 / 9));height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:#FFFFFF;border:1px solid var(--line);border-radius:4px;z-index:50;box-shadow:0 4px 16px rgba(15,23,42,.06);position:relative}
+.nav-count{font-size:13px;font-weight:500;color:var(--ink-muted);font-variant-numeric:tabular-nums}
+.nav-dots{display:flex;gap:6px;position:absolute;left:50%;transform:translateX(-50%)}
+.nav-dot{width:6px;height:6px;border-radius:50%;border:none;padding:0;cursor:pointer;background:#CBD5E0;transition:all .25s}
+.nav-dot.active{background:var(--navy);width:20px;border-radius:3px}
+.nav-dot:hover{background:#94A3B8}
+.nav-btns{display:flex;gap:8px}
+.nav-btn{width:32px;height:32px;border:1px solid var(--line);background:#FFFFFF;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-secondary);font-size:18px;transition:all .15s}
+.nav-btn:hover{background:var(--surface);border-color:#CBD5E0;color:var(--ink)}
+.nav-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── TITLE SLIDE SPECIFIC ── */
+.slide-title{background:linear-gradient(135deg,#0F2440 0%,#1E3A5F 100%)}
+.slide-title .slide-inner{padding-bottom:60px}
+.slide-title h1{color:#FFFFFF;font-size:clamp(36px,3.2vw,52px)}
+.slide-title .lead{color:rgba(255,255,255,.72);max-width:640px;margin:0 auto}
+.slide-title .eyebrow{color:var(--gold-light)}
+.slide-title .title-team{font-size:15px;color:rgba(255,255,255,.88);margin-top:32px;line-height:1.6;max-width:720px}
+.slide-title .title-programme{font-size:13px;color:rgba(255,255,255,.55);margin-top:10px;line-height:1.55;max-width:640px}
+
+
+/* ── VALUE DASHBOARD (Slide 9) ── */
+.slide-dashboard .slide-inner{padding:4px 10px 6px;overflow:hidden}
+.slide-dashboard .slide-header{margin-bottom:0;flex-shrink:0}
+.slide-dashboard .eyebrow{display:none}
+.slide-dashboard .slide-header h2,.slide-dashboard .lead{display:none}
+.slide-dashboard .slide-body{flex:1;min-height:0;overflow:hidden;justify-content:stretch;padding:0}
+.value-dashboard-wrap{flex:1;min-height:0;width:100%;display:flex;align-items:stretch;justify-content:stretch;border:none;border-radius:0;background:#FFFFFF;overflow:hidden;padding:0}
+.value-dashboard-wrap svg{width:100%;height:100%;display:block}
+
+@media(max-width:900px){
+  .slide-inner{padding:36px 32px 48px}
+  .grid-2,.grid-3,.grid-4,.chain-row,.approve-grid,.asym-grid,.risk-grid,.value-acts,.ro-grid,.terms-row,.tranche-grid{grid-template-columns:1fr}
+  .asym-vs{display:none}
+  .flow{flex-wrap:wrap}
+  .roadmap-track{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+<div class="deck">
+<div class="slides" id="slides">
+
+<!-- SLIDE 1 · TITLE -->
+<section class="slide slide-title active" data-slide="0">
+  <div class="slide-inner title-center">
+    <div class="eyebrow">Executive AI Research-to-Execution Board Defense</div>
+    <div class="title-rule"></div>
+    <h1>AI-Assisted Customisation<br>Reconciliation</h1>
+    <p class="lead" style="margin-top:16px">A Decision-Support Capability for Major Version Upgrades of Vendor Core Banking Applications</p>
+    <p class="title-team">Noaman K | Vinayak R | Abhishek J | Prashant C | (Group 1)</p>
+    <p class="title-programme">Batch: Cohort 8 · Programme: DBA in Emerging Technologies · Concentration: Generative AI</p>
+  </div>
+</section>
+
+<!-- SLIDE 2 · ACCUMULATION STORY -->
+<section class="slide tone-alt slide-timeline" data-slide="1">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 1 · The Problem</div>
+      <h2>The Silent Pile That Becomes a Crisis</h2>
+      <p class="lead">Flexcube 10.1 · A Tier-One Bank · 2022–2026 — customisations accumulate quietly until the mandatory upgrade turns them into a programme crisis.</p>
+    </div>
+    <div class="slide-body">
+      <div class="timeline-wrap">
+        <div class="timeline-axis">
+          <div class="year-col">
+            <div class="year-note">Flexcube 10.1 goes live</div>
+            <div class="year-stack">
+              <div class="stack-block reg" data-h="44"></div>
+              <div class="stack-block prod" data-h="33"></div>
+              <div class="stack-block ops" data-h="22"></div>
+            </div>
+            <div class="year-label">2022</div>
+            <div class="year-sub">~3,000 man-days</div>
+          </div>
+          <div class="year-col">
+            <div class="year-note">Local customisations build up</div>
+            <div class="year-stack">
+              <div class="stack-block reg" data-h="77"></div>
+              <div class="stack-block prod" data-h="66"></div>
+              <div class="stack-block ops" data-h="55"></div>
+            </div>
+            <div class="year-label">2023</div>
+            <div class="year-sub">~10,000 man-days</div>
+          </div>
+          <div class="year-col">
+            <div class="year-note">Regulatory &amp; product changes</div>
+            <div class="year-stack">
+              <div class="stack-block reg" data-h="88"></div>
+              <div class="stack-block prod" data-h="77"></div>
+              <div class="stack-block ops" data-h="66"></div>
+            </div>
+            <div class="year-label">2024</div>
+            <div class="year-sub">~12,000 man-days</div>
+          </div>
+          <div class="year-col">
+            <div class="year-note"></div>
+            <div class="year-stack">
+              <div class="stack-block reg" data-h="99"></div>
+              <div class="stack-block prod" data-h="88"></div>
+              <div class="stack-block ops" data-h="77"></div>
+            </div>
+            <div class="year-label">2025</div>
+            <div class="year-sub">~15,000 man-days</div>
+          </div>
+          <div class="year-col crisis-year">
+            <div class="year-note">Flexcube 10.1 end of support</div>
+            <div class="year-stack">
+              <div class="stack-block reg" data-h="110"></div>
+              <div class="stack-block prod" data-h="99"></div>
+              <div class="stack-block ops" data-h="88"></div>
+            </div>
+            <div class="year-label">2026</div>
+            <div class="year-sub">40,000+ man-days</div>
+          </div>
+        </div>
+        <div class="crisis-callout">
+          <strong>Flexcube 14.8 upgrade mandatory before end of support — 40,000+ man-days of customisation to reconcile</strong>
+          <span>How do we do this today — and at what cost?</span>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-swatch" style="background:#1E3A5F"></span>Regulatory</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#4A6FA5"></span>Product</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#8BA4C7"></span>Operational</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#B42318"></span>Upgrade crisis</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3 · STATUS QUO -->
+<section class="slide slide-metrics" data-slide="2">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 1 · The Problem</div>
+      <h2>Manual Reconciliation at Scale</h2>
+      <p class="lead">One customisation at a time, multiplied by thousands — the current process cannot scale and automation alone will not help.</p>
+    </div>
+    <div class="slide-body">
+      <div class="flow" style="margin-bottom:24px">
+        <div class="flow-step"><div class="flow-num">1</div><h4>Extract</h4><p>Customisation artefacts from source control + docs</p></div>
+        <div class="flow-step"><div class="flow-num">2</div><h4>Manual Review</h4><p>Senior consultant reads code<br><strong style="color:var(--red)">0.5–1 day per item</strong></p></div>
+        <div class="flow-step"><div class="flow-num">3</div><h4>Cross-Reference</h4><p>Flexcube release notes<br>3,000+ pages unstructured</p></div>
+        <div class="flow-step"><div class="flow-num">4</div><h4>Judgement</h4><p>Drop / retrofit / rework / redesign</p></div>
+        <div class="flow-step"><div class="flow-num">5</div><h4>Change Control</h4><p>Audit trail created</p></div>
+      </div>
+      <div class="grid-3 metrics-row" style="margin-bottom:20px">
+        <div class="metric-box key-stat"><div class="val" style="color:var(--red)">3,000–6,000</div><div class="lbl">Consultant-days (first pass)</div></div>
+        <div class="metric-box key-stat"><div class="val" style="color:var(--red)">USD 4.5–9M</div><div class="lbl">At USD 1,500/day</div></div>
+        <div class="metric-box key-stat"><div class="val">1–2 days</div><div class="lbl">Per customisation × 3,000 items</div></div>
+      </div>
+      <div class="grid-3">
+        <div class="panel-accent"><h4 style="font-size:15px;margin-bottom:4px">Business intent is not in the code</h4><p class="small">Why it was written — the regulatory rule, product variation, or workaround — is rarely documented and often known only to consultants who have moved on.</p></div>
+        <div class="panel-accent"><h4 style="font-size:15px;margin-bottom:4px">Release notes are unstructured</h4><p class="small">Flexcube 14.8 release notes run to several thousand pages of narrative text. No rule-based system can reliably cross-reference at that volume.</p></div>
+        <div class="panel-accent"><h4 style="font-size:15px;margin-bottom:4px">Institutional memory walks out</h4><p class="small">Multi-year programmes cycle through staff. By upgrade time, the people who built the customisations are gone. AI must reason from artefacts alone.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4 · WHY AI -->
+<section class="slide tone-alt slide-compare" data-slide="3">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 2 · The Intellectual Pivot</div>
+      <h2>Why AI — and Not Conventional Automation</h2>
+      <p class="lead">This is not an automation problem. It is a reasoning problem — and reasoning at scale is what large language models now do.</p>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2">
+        <div class="compare-col fail">
+          <h3>What Conventional Automation Can Do</h3>
+          <ul class="compare-list">
+            <li><span class="icon" style="color:var(--red)">✕</span> Match patterns in structured data</li>
+            <li><span class="icon" style="color:var(--red)">✕</span> Apply predefined rules across known categories</li>
+            <li><span class="icon" style="color:var(--red)">✕</span> Process high volumes within defined scope</li>
+          </ul>
+        </div>
+        <div class="compare-col win">
+          <h3>What This Problem Requires</h3>
+          <ul class="compare-list">
+            <li><span class="icon" style="color:var(--green)">✓</span> Understand business intent from unstructured code and partial documentation</li>
+            <li><span class="icon" style="color:var(--green)">✓</span> Exercise judgement in ambiguous situations where no rule exists</li>
+            <li><span class="icon" style="color:var(--green)">✓</span> Reason across 3,000+ pages of narrative release notes simultaneously</li>
+          </ul>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:20px;text-align:center">
+        <p style="font-size:15px;color:var(--ink-secondary);line-height:1.55"><strong style="color:var(--navy)">LLMs cross this gap</strong> — read and reason across code, documentation, and release notes; infer business intent from context; produce structured recommendations with rationale and source citations at volume no consultant team can match.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5 · SOLUTION -->
+<section class="slide slide-solution" data-slide="4">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 3 · The Solution</div>
+      <h2>AI-Assisted Reconciliation</h2>
+      <p class="lead">Decision-support, not automation. The AI produces the best first-pass analysis so the human reviewer decides faster, more consistently, and with full auditability.</p>
+    </div>
+    <div class="slide-body">
+      <div class="flow" style="margin-bottom:24px">
+        <div class="flow-step"><div class="flow-num" style="background:var(--green)">1</div><h4>Customisation Enters</h4><p>Code artefact + documentation ingested from source control</p></div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--green)">2</div><h4>AI Analyses</h4><p>Reads code, cross-references Flexcube 14.8 release notes, retrieves context</p></div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--green)">3</div><h4>Recommendation</h4><p>Classification + rationale + source citations + confidence indicator</p></div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--gold)">4</div><h4>Human Reviewer Decides</h4><p>Confirms, modifies, or rejects. Human accountable. AI assists.</p></div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--gold)">5</div><h4>Decision Logged</h4><p>Immutable audit trail: AI recommendation + human decision, attributed and timestamped</p></div>
+      </div>
+      <div class="grid-4">
+        <div class="metric-box"><div class="val" style="color:var(--green)">40–60%</div><div class="lbl">Effort reduction per item</div></div>
+        <div class="metric-box"><div class="val">100%</div><div class="lbl">Human reviewer on every decision</div></div>
+        <div class="metric-box"><div class="val">Full</div><div class="lbl">Audit trail — AI + human — every item</div></div>
+        <div class="metric-box"><div class="val" style="font-size:clamp(16px,1.4vw,22px)">Model Risk</div><div class="lbl">Validated before production</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6 · ARCHITECTURE -->
+<section class="slide tone-alt slide-sourcing" data-slide="5">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 3 · The Solution</div>
+      <h2>Sourcing and Architecture: Rent the Model, Own Everything Around It</h2>
+      <p class="lead">Platform-led · internally-built application · time-bounded partner support. Vendor neutrality at the model layer. Full IP ownership at every layer below.</p>
+    </div>
+    <div class="slide-body">
+      <div class="grid-2" style="gap:32px">
+        <div>
+          <div class="arch-stack">
+            <div class="arch-row rented"><span class="layer">Model Layer</span><span class="desc">Azure OpenAI / AWS Bedrock / Vertex AI — foundation model inference</span><span class="tag tag-rent">Rent</span></div>
+            <div class="arch-row"><span class="layer">Orchestration</span><span class="desc">Prompting · RAG · Guardrails · Tool routing · Structured output</span><span class="tag tag-own">Own</span></div>
+            <div class="arch-row"><span class="layer">Data Layer</span><span class="desc">Vector store · Knowledge corpus · Customisation ingestion · Delta sync</span><span class="tag tag-own">Own</span></div>
+            <div class="arch-row"><span class="layer">Application</span><span class="desc">Reviewer interface · Workflow integration · Change-control submission</span><span class="tag tag-own">Own</span></div>
+            <div class="arch-row"><span class="layer">Integration</span><span class="desc">Auth · Source systems · Change control APIs · Audit forwarding</span><span class="tag tag-own">Own</span></div>
+            <div class="arch-row"><span class="layer">Monitoring</span><span class="desc">Telemetry · Drift · Cost · Audit trail integrity</span><span class="tag tag-own">Own</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="panel-white" style="margin-bottom:16px">
+            <h4 style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px;letter-spacing:.06em;text-transform:uppercase">Sourcing Evaluation</h4>
+            <div class="score-bar"><span class="label">Build</span><div class="track"><div class="fill score-fill" data-w="65"></div></div><span class="num">131</span></div>
+            <div class="score-bar"><span class="label">Buy</span><div class="track"><div class="fill score-fill" data-w="48"></div></div><span class="num">97</span></div>
+            <div class="score-bar"><span class="label">Partner</span><div class="track"><div class="fill score-fill" data-w="57"></div></div><span class="num">115</span></div>
+            <div class="score-bar"><span class="label">Platform</span><div class="track"><div class="fill highlight score-fill" data-w="77"></div></div><span class="num">154</span></div>
+            <p class="small" style="margin-top:10px">Platform wins: fast access to current-generation models, vendor-neutral model layer, build slower than programme can absorb.</p>
+          </div>
+          <div class="panel" style="border-left:3px solid var(--navy)">
+            <h4 style="font-size:15px;font-weight:600;margin-bottom:6px">Deployment</h4>
+            <p class="small">Managed platform in sovereign region · UAE-resident inference and storage · Per-jurisdiction deployment · No cross-border data movement without contractual exception</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7 · RESEARCH SPINE -->
+<section class="slide slide-research" data-slide="6">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 4 · Research Spine</div>
+      <h2>From Objectives to Falsifiable Hypotheses</h2>
+      <p class="lead">Every claim in this proposal is testable — anchored against named public benchmarks: Oracle · IBM · AWS · McKinsey · SWE-bench · CBUAE · NIST · OWASP.</p>
+    </div>
+    <div class="slide-body">
+      <div class="ro-grid">
+        <div class="ro-card"><div class="ro-id">RO1</div><h4>Effectiveness</h4><p>Effort, cycle time, consistency gains</p></div>
+        <div class="ro-card"><div class="ro-id">RO2</div><h4>Trustworthiness</h4><p>Accuracy, explainability, audit</p></div>
+        <div class="ro-card"><div class="ro-id">RO3</div><h4>Operational Viability</h4><p>Operating model, accountability</p></div>
+        <div class="ro-card"><div class="ro-id">RO4</div><h4>Risk &amp; Failure Modes</h4><p>Adversarial controls, mitigations</p></div>
+        <div class="ro-card"><div class="ro-id">RO5</div><h4>Scalability &amp; Economics</h4><p>Waves, countries, unit economics</p></div>
+      </div>
+      <div class="chain-row">
+        <div class="chain-col">
+          <h4>Sample Research Questions</h4>
+          <div class="chain-item"><strong>RQ1.1</strong> — Effort reduction vs manual baseline</div>
+          <div class="chain-item"><strong>RQ2.1</strong> — Accuracy vs senior consultant benchmark</div>
+          <div class="chain-item"><strong>RQ3.1</strong> — Operating model integration</div>
+          <div class="chain-item"><strong>RQ4.1</strong> — Failure-mode enumeration</div>
+          <div class="chain-item"><strong>RQ5.1</strong> — Scaling across waves and jurisdictions</div>
+        </div>
+        <div class="chain-col">
+          <h4>Sample Hypotheses</h4>
+          <div class="chain-item"><strong>H1.1</strong> — 40–60% effort reduction in controlled pilot</div>
+          <div class="chain-item"><strong>H2.1</strong> — ≥80% accuracy, floor 65% (kill threshold)</div>
+          <div class="chain-item"><strong>H3.1</strong> — No exception to change-control governance</div>
+          <div class="chain-item"><strong>H4.1</strong> — All failure modes enumerated with owners</div>
+          <div class="chain-item"><strong>H5.1</strong> — 15% cost decline per wave; break-even Wave 2</div>
+        </div>
+        <div class="chain-col">
+          <h4>Academic Credibility</h4>
+          <div class="chain-item">10 Research Questions mapped to 5 Objectives</div>
+          <div class="chain-item">10 Falsifiable Hypotheses with benchmark anchors</div>
+          <div class="chain-item">Model risk validation required at Gate G1 (H2.2)</div>
+          <div class="chain-item">Kill criteria pre-committed — not negotiated under pressure</div>
+          <div class="chain-item">Every failure pre-defined with early-warning signals</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 8 · ASYMMETRIC CASE -->
+<section class="slide tone-alt" data-slide="7">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 5 · Commercial Case</div>
+      <h2>The Asymmetric Case: Why Acting Now is Rational</h2>
+      <p class="lead">The cost of doing nothing rises and compounds. The cost of acting is bounded by design.</p>
+    </div>
+    <div class="slide-body">
+      <div class="asym-grid">
+        <div class="asym-panel rise">
+          <h3>Cost of Inaction — Rises · Compounds · Becomes Irreversible</h3>
+          <div class="asym-item"><span>Manual reconciliation (first pass)</span><span class="amt" style="color:var(--red)">USD 4.5–9M</span></div>
+          <div class="asym-item"><span>Programme drag — avoidable consultant &amp; vendor spend</span><span class="amt" style="color:var(--red)">Months of delay</span></div>
+          <div class="asym-item"><span>Customisation backlog compounds each quarter</span><span class="amt" style="color:var(--red)">↑ Every quarter</span></div>
+          <div class="asym-item"><span>Vendor de-support risk (Flexcube 10.1 EOL)</span><span class="amt" style="color:var(--red)">Regulatory exposure</span></div>
+          <div class="asym-item"><span>Strategic positioning loss vs peers operationalising AI</span><span class="amt" style="color:var(--red)">Competitive gap</span></div>
+        </div>
+        <div class="asym-vs">vs</div>
+        <div class="asym-panel bound">
+          <h3>Cost of Acting — Bounded · Gated · Reversible at Every Step</h3>
+          <div class="asym-item"><span>Discovery (T0)</span><span class="amt" style="color:var(--green)">USD 0.4–0.6M</span></div>
+          <div class="asym-item"><span>Pilot Build + Operation (T1–T2)</span><span class="amt" style="color:var(--green)">USD 2.0–3.0M</span></div>
+          <div class="asym-item"><span>Full programme cumulative</span><span class="amt" style="color:var(--green)">USD 9–12M</span></div>
+          <div class="asym-item"><span>Stage-gated funding — tranche on evidence only</span><span class="amt" style="color:var(--green)">Reversible</span></div>
+          <div class="asym-item"><span>Fallback is manual baseline — no new dependency</span><span class="amt" style="color:var(--green)">Known downside</span></div>
+        </div>
+      </div>
+      <div class="asym-footer">
+        <div class="item"><div class="num">3×</div><div class="small">Orders of magnitude asymmetry</div></div>
+        <div class="item"><div class="num">USD 9–12M</div><div class="small">Total bounded investment</div></div>
+        <div class="item"><div class="num">Wave 2</div><div class="small">Economic break-even</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9 · VALUE REALISATION DASHBOARD -->
+<section class="slide slide-dashboard" data-slide="8">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 5 · Commercial Case</div>
+      <h2>Value Realisation Dashboard</h2>
+      <p class="lead">Economic break-even at end of Wave 2 · Value compounds from Wave 3 onwards</p>
+    </div>
+    <div class="slide-body">
+      <div class="value-dashboard-wrap">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" font-family="Inter, Segoe UI, system-ui, sans-serif">
+  <g class="vd-fade vd-fade-1">
+  <rect x="0" y="0" width="1280" height="42" fill="#1F3864"/>
+  <circle cx="36" cy="21" r="9" fill="#3B6D11"/>
+  <text x="36" y="26" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">✓</text>
+  <text x="54" y="27" font-size="13" font-weight="700" fill="#FFFFFF">STATUS: ON TRACK</text>
+  <text x="200" y="27" font-size="11" fill="rgba(255,255,255,0.7)">Hypothesis targets within threshold · Model risk validation in progress</text>
+  <text x="1264" y="27" font-size="11" fill="rgba(255,255,255,0.7)" text-anchor="end">Gate G0 · Discovery</text>
+
+  <!-- ═══════════════ ACTION TITLE ═══════════════ -->
+  <text x="24" y="68" font-size="16" font-weight="700" fill="#1F3864">Economic break-even at end of Wave 2 — value compounds from Wave 3 onwards</text>
+  <text x="24" y="88" font-size="10.5" fill="#888">Illustrative projections · Solid = actuals · Dashed = hypothesis targets</text>
+
+  </g>
+  <g class="vd-fade vd-fade-2">
+  <!-- ═══════════════ TRUST TICKERS ═══════════════ -->
+
+  <!-- Ticker 1: Accuracy -->
+  <rect x="24" y="100" width="400" height="78" rx="10" fill="#F7F7F7" stroke="#E0E0E0" stroke-width="0.5"/>
+  <circle cx="64" cy="139" r="20" fill="#E6F1FB"/>
+  <circle cx="64" cy="139" r="9" fill="none" stroke="#185FA5" stroke-width="2"/>
+  <circle cx="64" cy="139" r="3.5" fill="#185FA5"/>
+  <line x1="64" y1="128" x2="64" y2="132" stroke="#185FA5" stroke-width="1.5"/>
+  <line x1="64" y1="146" x2="64" y2="150" stroke="#185FA5" stroke-width="1.5"/>
+  <line x1="53" y1="139" x2="57" y2="139" stroke="#185FA5" stroke-width="1.5"/>
+  <line x1="71" y1="139" x2="75" y2="139" stroke="#185FA5" stroke-width="1.5"/>
+  <text x="94" y="129" font-size="24" font-weight="700" fill="#185FA5">≥80%</text>
+  <text x="94" y="147" font-size="11" fill="#555">Reconciliation accuracy vs senior consultant baseline</text>
+  <text x="94" y="161" font-size="10" fill="#999">Target threshold  ·  H2.1  ·  Floor: 65%</text>
+
+  <!-- Ticker 2: HITL -->
+  <rect x="440" y="100" width="400" height="78" rx="10" fill="#F7F7F7" stroke="#E0E0E0" stroke-width="0.5"/>
+  <circle cx="480" cy="139" r="20" fill="#EAF3DE"/>
+  <circle cx="475" cy="133" r="5.5" fill="#3B6D11"/>
+  <path d="M465 149 Q465 142 475 142 Q485 142 485 149" fill="#3B6D11"/>
+  <circle cx="487" cy="135" r="4.5" fill="#3B6D11"/>
+  <path d="M480 149 Q480 144 487 144 Q494 144 494 149" fill="#3B6D11"/>
+  <text x="510" y="129" font-size="24" font-weight="700" fill="#3B6D11">100%</text>
+  <text x="510" y="147" font-size="10.5" fill="#555">HITL review rate · Named reviewer, every decision</text>
+  <text x="510" y="161" font-size="10" fill="#999">Non-negotiable floor  ·  FR-04  ·  Kill trigger if &lt;60%</text>
+
+  <!-- Ticker 3: Governance -->
+  <rect x="856" y="100" width="400" height="78" rx="10" fill="#F7F7F7" stroke="#E0E0E0" stroke-width="0.5"/>
+  <circle cx="896" cy="139" r="20" fill="#FAEEDA"/>
+  <path d="M896 125 L907 130 L907 138 Q907 146 896 152 Q885 146 885 138 L885 130 Z" fill="none" stroke="#854F0B" stroke-width="2"/>
+  <path d="M891 138 L895 142 L902 134" fill="none" stroke="#854F0B" stroke-width="2" stroke-linecap="round"/>
+  <text x="926" y="129" font-size="24" font-weight="700" fill="#854F0B">Amber</text>
+  <text x="926" y="147" font-size="10.5" fill="#555">Governance · CBUAE · Model risk · Audit trail</text>
+  <text x="926" y="161" font-size="10" fill="#999">Model risk validation in progress (Gate G1) · Target: Green at G1</text>
+
+  </g>
+  <g class="vd-fade vd-fade-3">
+  <!-- ═══════════════ ACT CARDS ═══════════════ -->
+  <!-- Layout: Act1 = 340px, Act2 = 340px, Act3 = 520px (wider, primary visual) -->
+
+  <!-- ─── ACT 1: THE ASYMMETRY (narrow supporting) ─── -->
+  <rect x="24" y="192" width="368" height="400" rx="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <text x="40" y="218" font-size="10" font-weight="700" letter-spacing="1" fill="#999">ACT 1  ·  THE ASYMMETRY</text>
+  <text x="40" y="235" font-size="13" font-weight="700" fill="#1F3864">Cumulative value vs AI spend</text>
+  <text x="40" y="250" font-size="10" fill="#999" font-style="italic">"Net economic value delivered"</text>
+
+  <!-- Y axis -->
+  <line x1="82" y1="262" x2="82" y2="500" stroke="#E8E8E8" stroke-width="1"/>
+  <line x1="82" y1="500" x2="358" y2="500" stroke="#E8E8E8" stroke-width="1"/>
+  <!-- Gridlines -->
+  <line x1="82" y1="500" x2="358" y2="500" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="82" y1="452" x2="358" y2="452" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="82" y1="404" x2="358" y2="404" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="82" y1="356" x2="358" y2="356" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="82" y1="308" x2="358" y2="308" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="82" y1="262" x2="358" y2="262" stroke="#F2F2F2" stroke-width="0.7"/>
+  <!-- Y labels: 0,5k,10k,15k over 238px -->
+  <text x="74" y="504" font-size="9" fill="#BBB" text-anchor="end">0</text>
+  <text x="74" y="456" font-size="9" fill="#BBB" text-anchor="end">5k</text>
+  <text x="74" y="408" font-size="9" fill="#BBB" text-anchor="end">10k</text>
+  <text x="74" y="360" font-size="9" fill="#BBB" text-anchor="end">15k</text>
+  <text x="40" y="268" font-size="8" fill="#BBB">hrs</text>
+  <!-- X labels W1-W5: x positions 137,192,247,302,357 -->
+  <text x="137" y="518" font-size="10" fill="#999" text-anchor="middle">W1</text>
+  <text x="192" y="518" font-size="10" fill="#999" text-anchor="middle">W2</text>
+  <text x="247" y="518" font-size="10" fill="#999" text-anchor="middle">W3</text>
+  <text x="302" y="518" font-size="10" fill="#999" text-anchor="middle">W4</text>
+  <text x="357" y="518" font-size="10" fill="#999" text-anchor="middle">W5</text>
+
+  <!-- Labour hours: 2000,5200,9000,12500,15000 → y=500-(val/15000)*238 -->
+  <!-- 2000→468, 5200→418, 9000→357, 12500→302, 15000→262 -->
+  <defs>
+    <linearGradient id="vd-bg1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#185FA5" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#185FA5" stop-opacity="0.01"/>
+    </linearGradient>
+  </defs>
+  <path d="M137 468 C157 455 177 438 192 418 C207 398 227 376 247 357 C267 338 282 318 302 302 C322 286 342 270 357 262 L357 500 L137 500 Z" fill="url(#vd-bg1)"/>
+  <polyline class="vd-draw vd-draw-1" points="137,468 192,418 247,357 302,302 357,262" fill="none" stroke="#185FA5" stroke-width="2.5" stroke-linejoin="round"/>
+  <circle cx="137" cy="468" r="4" fill="#185FA5" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="192" cy="418" r="4" fill="#185FA5" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="247" cy="357" r="4" fill="#185FA5" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="302" cy="302" r="4" fill="#185FA5" stroke="#fff" stroke-width="1.5"/>
+  <circle cx="357" cy="262" r="4" fill="#185FA5" stroke="#fff" stroke-width="1.5"/>
+  <!-- AI compute flat line -->
+  <line x1="137" y1="497" x2="357" y2="497" stroke="#E89B3A" stroke-width="2" stroke-dasharray="5,3"/>
+  <!-- GAP annotation -->
+  <line x1="348" y1="262" x2="348" y2="497" stroke="#185FA5" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="352" y="382" font-size="10" fill="#185FA5" font-weight="700">GAP</text>
+
+  <!-- Legend -->
+  <line x1="40" y1="536" x2="56" y2="536" stroke="#185FA5" stroke-width="2.5"/>
+  <text x="62" y="540" font-size="9.5" fill="#666">Labour hours reclaimed</text>
+  <line x1="40" y1="552" x2="56" y2="552" stroke="#E89B3A" stroke-width="2" stroke-dasharray="5,3"/>
+  <text x="62" y="556" font-size="9.5" fill="#666">AI compute cost</text>
+  <text x="40" y="572" font-size="9.5" fill="#185FA5" font-weight="700">Gap = Net Economic Value</text>
+
+  <!-- ─── ACT 2: LEARNING CURVE (narrow supporting) ─── -->
+  <rect x="408" y="192" width="368" height="400" rx="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="0.5"/>
+  <text x="424" y="218" font-size="10" font-weight="700" letter-spacing="1" fill="#999">ACT 2  ·  INSTITUTIONAL LEARNING GAIN</text>
+  <text x="424" y="235" font-size="13" font-weight="700" fill="#1F3864">Cost per reconciliation · wave on wave</text>
+  <text x="424" y="250" font-size="10" fill="#999" font-style="italic">"The bank builds proprietary IP"</text>
+
+  <!-- Axes -->
+  <line x1="440" y1="262" x2="440" y2="500" stroke="#E8E8E8" stroke-width="1"/>
+  <line x1="440" y1="500" x2="716" y2="500" stroke="#E8E8E8" stroke-width="1"/>
+  <!-- Gridlines: 700-1700 over 238px, gridlines at 900,1100,1300,1500 -->
+  <!-- y=500-((val-700)/1000)*238 -->
+  <!-- 900→452.4, 1100→404.8, 1300→357.2, 1500→309.6, 1700→262 -->
+  <line x1="440" y1="452" x2="716" y2="452" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="440" y1="405" x2="716" y2="405" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="440" y1="357" x2="716" y2="357" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="440" y1="310" x2="716" y2="310" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="440" y1="262" x2="716" y2="262" stroke="#F2F2F2" stroke-width="0.7"/>
+  <!-- Y labels -->
+  <text x="432" y="456" font-size="9" fill="#BBB" text-anchor="end">900</text>
+  <text x="432" y="409" font-size="9" fill="#BBB" text-anchor="end">1.1k</text>
+  <text x="432" y="361" font-size="9" fill="#BBB" text-anchor="end">1.3k</text>
+  <text x="432" y="314" font-size="9" fill="#BBB" text-anchor="end">1.5k</text>
+  <text x="424" y="268" font-size="8" fill="#BBB">USD</text>
+  <!-- X labels: Baseline,W1,W2,W3,W4 at x: 495,550,605,660,715 -->
+  <text x="495" y="518" font-size="9.5" fill="#999" text-anchor="middle">Baseline</text>
+  <text x="550" y="518" font-size="9.5" fill="#999" text-anchor="middle">W1</text>
+  <text x="605" y="518" font-size="9.5" fill="#999" text-anchor="middle">W2</text>
+  <text x="660" y="518" font-size="9.5" fill="#999" text-anchor="middle">W3</text>
+  <text x="715" y="518" font-size="9.5" fill="#999" text-anchor="middle">W4</text>
+
+  <!-- Cost data: 1500,1275,1084,1030,978 → y=500-((val-700)/1000)*238 -->
+  <!-- 1500→309.6≈310, 1275→358.3≈358, 1084→405.0≈405, 1030→452.9≈453 (moved below), 978→461.6 -->
+  <!-- Corrected: 1030→500-((1030-700)/1000)*238=500-78.5=421.5, 978→500-((978-700)/1000)*238=500-66.2=433.8 -->
+  <!-- 1500→310, 1275→358, 1084→405, 1030→422, 978→434 -->
+  <defs>
+    <linearGradient id="vd-bg2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#185FA5" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#185FA5" stop-opacity="0.01"/>
+    </linearGradient>
+  </defs>
+  <path d="M495 310 C515 324 535 342 550 358 C565 374 585 392 605 405 C625 416 645 419 660 422 C678 424 698 429 715 434 L715 500 L495 500 Z" fill="url(#vd-bg2)"/>
+  <polyline class="vd-draw vd-draw-2" points="495,310 550,358 605,405 660,422 715,434" fill="none" stroke="#185FA5" stroke-width="2.5" stroke-linejoin="round"/>
+  <circle cx="495" cy="310" r="5" fill="#185FA5" stroke="#fff" stroke-width="2"/>
+  <circle cx="550" cy="358" r="5" fill="#185FA5" stroke="#fff" stroke-width="2"/>
+  <circle cx="605" cy="405" r="5" fill="#185FA5" stroke="#fff" stroke-width="2"/>
+  <circle cx="660" cy="422" r="5" fill="#185FA5" stroke="#fff" stroke-width="2"/>
+  <circle cx="715" cy="434" r="5" fill="#185FA5" stroke="#fff" stroke-width="2"/>
+
+  <!-- ANNOTATION ANCHORS (callout bubbles) -->
+  <!-- Anchor 1: W1 - Base integration -->
+  <rect x="456" y="332" width="82" height="28" rx="5" fill="#1F3864"/>
+  <line x1="497" y1="360" x2="550" y2="358" stroke="#1F3864" stroke-width="1.2"/>
+  <text x="497" y="344" font-size="8.5" fill="#FFFFFF" text-anchor="middle">−15%: Base</text>
+  <text x="497" y="355" font-size="8.5" fill="#FFFFFF" text-anchor="middle">integration</text>
+
+  <!-- Anchor 2: W2 - HITL feedback -->
+  <rect x="556" y="378" width="98" height="28" rx="5" fill="#185FA5"/>
+  <line x1="605" y1="378" x2="605" y2="405" stroke="#185FA5" stroke-width="1.2"/>
+  <text x="605" y="390" font-size="8.5" fill="#FFFFFF" text-anchor="middle">−15%: HITL tuning</text>
+  <text x="605" y="401" font-size="8.5" fill="#FFFFFF" text-anchor="middle">cuts review time</text>
+
+  <!-- Anchor 3: W3 - Corpus maturity -->
+  <rect x="614" y="402" width="94" height="28" rx="5" fill="#E89B3A"/>
+  <line x1="660" y1="402" x2="660" y2="422" stroke="#E89B3A" stroke-width="1.2"/>
+  <text x="661" y="414" font-size="8.5" fill="#FFFFFF" text-anchor="middle">−6%: Corpus</text>
+  <text x="661" y="425" font-size="8.5" fill="#FFFFFF" text-anchor="middle">maturity gain</text>
+
+  <!-- Decline summary -->
+  <text x="424" y="536" font-size="9.5" fill="#555">H5.1: −15%/wave through W3, then −5%</text>
+  <text x="424" y="552" font-size="9.5" fill="#888">Dashed = target · Solid = actuals</text>
+
+  <!-- ─── ACT 3: THE CROSSOVER (wider, primary visual) ─── -->
+  <rect x="792" y="192" width="464" height="400" rx="10" fill="#FFFFFF" stroke="#1F3864" stroke-width="1.5"/>
+  <!-- Primary visual badge -->
+  <rect x="1100" y="198" width="120" height="20" rx="5" fill="#1F3864"/>
+  <text x="1160" y="212" font-size="10" fill="#FFFFFF" text-anchor="middle" font-weight="700">Primary visual</text>
+
+  <text x="808" y="218" font-size="10" font-weight="700" letter-spacing="1" fill="#999">ACT 3  ·  THE CROSSOVER  ·  THE RESULT</text>
+  <text x="808" y="235" font-size="13" font-weight="700" fill="#1F3864">Cumulative investment vs value realised</text>
+  <text x="808" y="250" font-size="10" fill="#999" font-style="italic">"Break-even end of Wave 2 — value compounds from Wave 3"</text>
+
+  <!-- Axes -->
+  <line x1="808" y1="268" x2="808" y2="508" stroke="#E8E8E8" stroke-width="1"/>
+  <line x1="808" y1="508" x2="1224" y2="508" stroke="#E8E8E8" stroke-width="1"/>
+  <!-- Gridlines: 0-16m over 240px, at 4,8,12,16 -->
+  <!-- y=508-(val/16)*240 -->
+  <!-- 4→448, 8→388, 12→328, 16→268 -->
+  <line x1="808" y1="448" x2="1224" y2="448" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="808" y1="388" x2="1224" y2="388" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="808" y1="328" x2="1224" y2="328" stroke="#F2F2F2" stroke-width="0.7"/>
+  <line x1="808" y1="268" x2="1224" y2="268" stroke="#F2F2F2" stroke-width="0.7"/>
+  <!-- Y labels -->
+  <text x="800" y="512" font-size="9" fill="#BBB" text-anchor="end">0</text>
+  <text x="800" y="452" font-size="9" fill="#BBB" text-anchor="end">4m</text>
+  <text x="800" y="392" font-size="9" fill="#BBB" text-anchor="end">8m</text>
+  <text x="800" y="332" font-size="9" fill="#BBB" text-anchor="end">12m</text>
+  <text x="808" y="268" font-size="8" fill="#BBB">USD (m)</text>
+  <!-- X labels -->
+  <text x="870" y="524" font-size="9.5" fill="#999" text-anchor="middle">T0</text>
+  <text x="962" y="524" font-size="9.5" fill="#999" text-anchor="middle">G0</text>
+  <text x="1054" y="524" font-size="9.5" fill="#999" text-anchor="middle">G1 (W1)</text>
+  <text x="1146" y="524" font-size="9.5" fill="#999" text-anchor="middle">G2 (W2)</text>
+  <text x="1220" y="524" font-size="9.5" fill="#999" text-anchor="middle">G3 (W3)</text>
+
+  <!-- Investment: 0.5,2.3,5.5,8.0,9.5 → y=508-(val/16)*240 -->
+  <!-- 0.5→500.5, 2.3→473.5, 5.5→425.5, 8.0→388, 9.5→365.5 -->
+  <polyline class="vd-draw vd-draw-4" points="870,501 962,474 1054,426 1146,388 1220,366" fill="none" stroke="#E24B4A" stroke-width="2.5" stroke-linejoin="round"/>
+  <circle cx="870" cy="501" r="5" fill="#E24B4A" stroke="#fff" stroke-width="2"/>
+  <circle cx="962" cy="474" r="5" fill="#E24B4A" stroke="#fff" stroke-width="2"/>
+  <circle cx="1054" cy="426" r="5" fill="#E24B4A" stroke="#fff" stroke-width="2"/>
+  <circle cx="1146" cy="388" r="5" fill="#E24B4A" stroke="#fff" stroke-width="2"/>
+  <circle cx="1220" cy="366" r="5" fill="#E24B4A" stroke="#fff" stroke-width="2"/>
+
+  <!-- Value realised: 0,0.4,3.8,9.2,14.1 → y=508-(val/16)*240 -->
+  <!-- 0→508, 0.4→502, 3.8→451, 9.2→370.5, 14.1→296.5 -->
+  <defs>
+    <linearGradient id="vd-bg3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3B6D11" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#3B6D11" stop-opacity="0.01"/>
+    </linearGradient>
+  </defs>
+  <path d="M870 508 C900 506 930 504 962 502 C994 498 1024 472 1054 451 C1084 428 1116 392 1146 371 C1176 345 1200 316 1220 297 L1220 508 L870 508 Z" fill="url(#vd-bg3)"/>
+  <polyline class="vd-draw vd-draw-3" points="870,508 962,502 1054,451 1146,371 1220,297" fill="none" stroke="#3B6D11" stroke-width="2.5" stroke-linejoin="round"/>
+  <circle cx="870" cy="508" r="5" fill="#3B6D11" stroke="#fff" stroke-width="2"/>
+  <circle cx="962" cy="502" r="5" fill="#3B6D11" stroke="#fff" stroke-width="2"/>
+  <circle cx="1054" cy="451" r="5" fill="#3B6D11" stroke="#fff" stroke-width="2"/>
+  <circle cx="1146" cy="371" r="5" fill="#3B6D11" stroke="#fff" stroke-width="2"/>
+  <circle cx="1220" cy="297" r="5" fill="#3B6D11" stroke="#fff" stroke-width="2"/>
+
+  <!-- Hypothesis dashed target for investment (slightly above solid) -->
+  <polyline points="870,499 962,471 1054,422 1146,384 1220,362" fill="none" stroke="#E24B4A" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.5"/>
+  <!-- Hypothesis dashed target for value -->
+  <polyline points="870,508 962,500 1054,448 1146,368 1220,293" fill="none" stroke="#3B6D11" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.5"/>
+
+  <!-- Break-even vertical marker at G2 -->
+  <line x1="1146" y1="268" x2="1146" y2="508" stroke="#1F3864" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <!-- X crosshair marker -->
+  <line x1="1137" y1="362" x2="1155" y2="380" stroke="#1F3864" stroke-width="3"/>
+  <line x1="1155" y1="362" x2="1137" y2="380" stroke="#1F3864" stroke-width="3"/>
+  <!-- Break-even label -->
+  <rect x="1068" y="278" width="108" height="22" rx="5" fill="#1F3864"/>
+  <text x="1122" y="294" font-size="9.5" fill="#FFFFFF" text-anchor="middle" font-weight="700">✕ Break-even H5.2</text>
+
+  <!-- Net value zone label -->
+  <rect x="1170" y="328" width="70" height="32" rx="5" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+  <text x="1205" y="341" font-size="8.5" fill="#3B6D11" text-anchor="middle" font-weight="700">Net value</text>
+  <text x="1205" y="352" font-size="8.5" fill="#3B6D11" text-anchor="middle">zone ↑</text>
+
+  <!-- Legend -->
+  <line x1="808" y1="544" x2="822" y2="544" stroke="#E24B4A" stroke-width="2.5"/>
+  <text x="826" y="548" font-size="9.5" fill="#666">Investment</text>
+  <line x1="900" y1="544" x2="914" y2="544" stroke="#E24B4A" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.6"/>
+  <text x="918" y="548" font-size="9.5" fill="#999">Target</text>
+  <line x1="980" y1="544" x2="994" y2="544" stroke="#3B6D11" stroke-width="2.5"/>
+  <text x="998" y="548" font-size="9.5" fill="#666">Value realised</text>
+  <line x1="1090" y1="544" x2="1104" y2="544" stroke="#3B6D11" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.6"/>
+  <text x="1108" y="548" font-size="9.5" fill="#999">Target</text>
+  <text x="808" y="564" font-size="9" fill="#555">H5.2: break-even end of Wave 2 · Updated each gate</text>
+
+  </g>
+  <g class="vd-fade vd-fade-4">
+  <!-- ═══════════════ GOVERNANCE PANEL ═══════════════ -->
+  <rect x="24" y="608" width="1232" height="48" rx="10" fill="#FFFBF2" stroke="#E89B3A" stroke-width="0.8"/>
+  <path d="M50 636 L43 649 L57 649 Z" fill="#854F0B"/>
+  <text x="50" y="647" font-size="9.5" fill="#FFFBF2" text-anchor="middle" font-weight="700">!</text>
+  <text x="72" y="628" font-size="11" font-weight="700" fill="#1F3864">Section N.7 kill &amp; pause criteria — live from Gate G0</text>
+  <text x="72" y="644" font-size="10" fill="#555">Accuracy &lt;65%, adoption &lt;60%, or critical model risk finding triggers kill/pause at next gate · Dashboard monitors programme health — not just spending</text>
+  </g>
+</svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10 · RISK & GOVERNANCE -->
+<section class="slide tone-alt slide-risk" data-slide="9">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 6 · Governance &amp; Risk</div>
+      <h2>Risk, Governance and Pre-Mortem</h2>
+      <p class="lead">We have imagined failure in advance — and designed against it. Every risk has a named owner. The board does not get surprised.</p>
+    </div>
+    <div class="slide-body">
+      <div class="risk-grid">
+        <div class="risk-card">
+          <div class="risk-head"><span class="risk-id">R-01</span><span class="severity sev-high">HIGH</span></div>
+          <h4>Hallucination on a material reconciliation decision</h4>
+          <p>Grounding + citations + confidence indicators + mandatory human review on every output</p>
+        </div>
+        <div class="risk-card">
+          <div class="risk-head"><span class="risk-id">R-06</span><span class="severity sev-high">HIGH</span></div>
+          <h4>Reviewer adoption failure</h4>
+          <p>Senior involvement in Discovery; disagreement treated as signal not failure; transparent reporting to steering</p>
+        </div>
+        <div class="risk-card">
+          <div class="risk-head"><span class="risk-id">R-04</span><span class="severity sev-high">HIGH</span></div>
+          <h4>Model drift in production</h4>
+          <p>Continuous monitoring + quarterly benchmark re-runs + retraining triggers pre-defined</p>
+        </div>
+        <div class="risk-card">
+          <div class="risk-head"><span class="risk-id">Pre-Mortem</span></div>
+          <h4>Six failure scenarios mapped to root causes</h4>
+          <p>Early-warning signals and defensive design moves embedded throughout the dossier. Full register in Appendix 1. Hub-and-spoke operating model · Full RACI in Appendix 2.</p>
+        </div>
+      </div>
+      <div class="criteria-row">
+        <div class="criteria-box kill"><div class="type">Kill Criteria</div><p>Accuracy below 65% after mitigation · Cost per unit exceeds value per unit · Critical regulatory finding</p></div>
+        <div class="criteria-box pause"><div class="type">Pause Triggers</div><p>Adoption below 60% after 90 days · Major model-provider disruption · Data quality regression</p></div>
+        <div class="criteria-box expand"><div class="type">Expand Criteria</div><p>Quality and adoption above thresholds for 2 consecutive quarters · Ready to extend to next wave or jurisdiction</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 11 · ROADMAP -->
+<section class="slide slide-roadmap" data-slide="10">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 7 · Roadmap &amp; The Ask</div>
+      <h2>Roadmap and Gates: Discovery to Wave 2</h2>
+      <p class="lead">18-month horizon · Five stage gates · Funding released tranche by tranche on evidence. Model Risk Validation is the single longest-lead dependency for Gate G1.</p>
+    </div>
+    <div class="slide-body">
+      <div class="roadmap-track">
+        <div class="rm-phase"><div class="rm-bar" style="width:100%"></div><div class="gate">G0</div><h4>Discovery</h4><div class="dur">3 months</div><div class="cost">T0</div></div>
+        <div class="rm-phase"><div class="rm-bar" style="width:80%"></div><div class="gate">G1</div><h4>Pilot Build</h4><div class="dur">3–4 months</div><div class="cost">T1</div></div>
+        <div class="rm-phase"><div class="rm-bar" style="width:60%"></div><div class="gate">G2</div><h4>Pilot Operation</h4><div class="dur">3–4 months</div><div class="cost">T2</div></div>
+        <div class="rm-phase"><div class="rm-bar" style="width:40%"></div><div class="gate">G3</div><h4>Wave 1 Rollout</h4><div class="dur">3–6 months</div><div class="cost">T3</div></div>
+        <div class="rm-phase"><div class="rm-bar" style="width:20%;background:var(--gold-light)"></div><div class="gate">G4+</div><h4>Wave 2+</h4><div class="dur">Ongoing</div><div class="cost">T4+</div></div>
+      </div>
+      <div class="tranche-grid">
+        <div class="tranche"><div class="t-id">T0 Discovery</div><div class="t-amt">USD 0.4–0.6M</div><div class="t-when">On approval</div></div>
+        <div class="tranche"><div class="t-id">T1 Pilot Build</div><div class="t-amt">USD 1.2–1.8M</div><div class="t-when">At G0</div></div>
+        <div class="tranche"><div class="t-id">T2 Pilot Op.</div><div class="t-amt">USD 0.8–1.2M</div><div class="t-when">At G1</div></div>
+        <div class="tranche"><div class="t-id">T3 Wave 1</div><div class="t-amt">USD 1.8–2.6M</div><div class="t-when">At G2</div></div>
+        <div class="tranche"><div class="t-id">T4 Wave 2</div><div class="t-amt">USD 1.4–2.0M</div><div class="t-when">At G3</div></div>
+        <div class="tranche"><div class="t-id">T5+ Waves</div><div class="t-amt">USD 0.8–1.2M</div><div class="t-when">Per wave</div></div>
+      </div>
+      <div class="panel" style="margin-top:14px;text-align:center">
+        <p class="small"><strong style="color:var(--navy)">USD 9–12M cumulative</strong> · At every gate, the board retains the right to continue, redesign, pause, or terminate · Discovery is the correct first commitment</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12 · VERDICT -->
+<section class="slide tone-alt slide-verdict" data-slide="11">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="eyebrow">Act 7 · The Verdict</div>
+      <h2>The Board Recommendation</h2>
+    </div>
+    <div class="slide-body">
+      <div class="verdict-hero">
+        <h2 class="verdict-title">Controlled Rollout</h2>
+        <div class="verdict-rec" aria-live="polite">
+          <span class="rec-phrase rec-primary" data-text="Start now."></span>
+          <span class="rec-phrase" data-text="Contain the risk."></span>
+          <span class="rec-phrase rec-emphasis" data-text="Learn in controlled stages."></span>
+          <span class="rec-phrase" data-text="Scale only when the evidence supports it."></span>
+        </div>
+      </div>
+      <div class="approve-grid">
+        <div class="approve-box yes">
+          <div class="head">✓ The board IS approving</div>
+          <p>Discovery, Pilot Build, and Pilot Operation — with funding released only when the preceding gate criteria are met, and the bank retaining the right to continue, redesign, pause, or terminate at every gate.</p>
+        </div>
+        <div class="approve-box no">
+          <div class="head">✗ The board is NOT approving</div>
+          <p>Autonomous AI decision-making. Unrestricted scale-out. Any waiver from model risk, audit, security, or change-control. Continuation if kill criteria are triggered.</p>
+        </div>
+      </div>
+      <div class="terms-row">
+        <div class="term-chip">Stage-gated funding — each tranche on evidence only</div>
+        <div class="term-chip">Pre-committed kill criteria — not negotiated under pressure</div>
+        <div class="term-chip">Decision-support framing — named human reviewer on every decision</div>
+        <div class="term-chip">Full regulatory compliance — model risk, audit, CBUAE</div>
+        <div class="term-chip">Demand-pull expansion — later waves only when evidence justifies</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 13 · Q&A -->
+<section class="slide slide-title" data-slide="12">
+  <div class="slide-inner title-center">
+    <div class="eyebrow">Closing</div>
+    <h1 style="margin-bottom:32px">Q&amp;A</h1>
+    <div class="grid-3" style="width:100%;max-width:900px;text-align:left">
+      <div class="qa-col" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12)">
+        <h4 style="color:#fff">On the Economics</h4>
+        <p style="color:rgba(255,255,255,.65)">USD 9–12M · Break-even Wave 2 · 3 orders of magnitude asymmetry · Bounded downside, compounding upside</p>
+      </div>
+      <div class="qa-col" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12)">
+        <h4 style="color:#fff">On Governance</h4>
+        <p style="color:rgba(255,255,255,.65)">Model risk validation · CBUAE · Named human reviewer on every decision · Full audit trail · Board retains kill rights at every gate</p>
+      </div>
+      <div class="qa-col" style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12)">
+        <h4 style="color:#fff">On the Kill Criteria</h4>
+        <p style="color:rgba(255,255,255,.65)">Section N.7 · Pre-committed thresholds · Not negotiated under pressure · Accuracy &lt;65% = kill · Adoption &lt;60% after 90 days = pause</p>
+      </div>
+    </div>
+    <div class="title-meta" style="margin-top:32px">
+      <span>AI Project Design &amp; Execution</span>
+      <span>Cohort 8 Capstone</span>
+    </div>
+  </div>
+</section>
+
+</div><!-- /slides -->
+</div><!-- /deck -->
+
+<nav class="nav" id="navBar">
+  <span class="nav-count" id="slideNum">01 / 13</span>
+  <div class="nav-dots" id="navDots"></div>
+  <div class="nav-btns">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </div>
+</nav>
+
+</div><!-- /stage -->
+
+<script>
+(function(){
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+  let transitioning = false;
+  let verdictTimers = [];
+
+  function clearVerdictAnimation(slide){
+    verdictTimers.forEach(t => clearTimeout(t));
+    verdictTimers = [];
+    if(!slide) return;
+    slide.querySelectorAll('.rec-phrase').forEach(p => {
+      p.textContent = '';
+      p.classList.remove('visible', 'typing', 'impact', 'impact-primary', 'impact-emphasis');
+      p.style.animation = 'none';
+    });
+  }
+
+  function runVerdictAnimation(slide){
+    if(!slide?.classList.contains('slide-verdict')) return;
+    const phrases = [...slide.querySelectorAll('.rec-phrase')];
+    if(!phrases.length) return;
+
+    clearVerdictAnimation(slide);
+
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      phrases.forEach(p => {
+        p.textContent = p.dataset.text || '';
+        p.classList.add('visible');
+      });
+      return;
+    }
+
+    let delay = 350;
+    phrases.forEach(phrase => {
+      const text = phrase.dataset.text || '';
+      const isPrimary = phrase.classList.contains('rec-primary');
+      const isEmphasis = phrase.classList.contains('rec-emphasis');
+      const charMs = isPrimary ? 44 : 30;
+      const pauseAfter = isPrimary ? 750 : isEmphasis ? 600 : 480;
+
+      verdictTimers.push(setTimeout(() => {
+        phrase.classList.add('visible', 'typing');
+        let i = 0;
+        const typeNext = () => {
+          if(i < text.length){
+            phrase.textContent = text.slice(0, i + 1);
+            i++;
+            verdictTimers.push(setTimeout(typeNext, charMs));
+          } else {
+            phrase.classList.remove('typing');
+            void phrase.offsetWidth;
+            phrase.classList.add(isPrimary ? 'impact-primary' : isEmphasis ? 'impact-emphasis' : 'impact');
+          }
+        };
+        typeNext();
+      }, delay));
+
+      delay += text.length * charMs + pauseAfter;
+    });
+  }
+
+  const dotsContainer = document.getElementById('navDots');
+  for(let i = 0; i < total; i++){
+    const dot = document.createElement('button');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Slide ' + (i + 1));
+    dot.dataset.index = i;
+    dotsContainer.appendChild(dot);
+  }
+  const dots = dotsContainer.querySelectorAll('.nav-dot');
+
+  function updateNav(){
+    document.getElementById('slideNum').textContent = String(current + 1).padStart(2,'0') + ' / ' + String(total).padStart(2,'0');
+    dots.forEach((d,i) => d.classList.toggle('active', i === current));
+    document.getElementById('prevBtn').disabled = current === 0;
+    document.getElementById('nextBtn').disabled = current === total - 1;
+  }
+
+  function resetSlideAnimations(slide){
+    if(!slide) return;
+    clearVerdictAnimation(slide);
+    slide.querySelectorAll('.stack-block').forEach(b => {
+      b.style.setProperty('--bar-h', (b.dataset.h || 0) + 'px');
+      b.style.animation = 'none';
+      void b.offsetWidth;
+      b.style.animation = '';
+    });
+    slide.querySelectorAll('.score-fill').forEach(f => {
+      f.style.setProperty('--fill-w', (f.dataset.w || 0) + '%');
+      f.style.width = '0';
+      f.style.animation = 'none';
+      void f.offsetWidth;
+      f.style.animation = '';
+    });
+    slide.querySelectorAll('.vd-draw, .key-stat, .compare-list .icon, .ro-card, .sev-high, .rm-phase, .tranche, .rm-bar, .flow-step, .flow-step .flow-num, .slide-solution .metric-box').forEach(el => {
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+    });
+  }
+
+  function goTo(index){
+    if(transitioning || index === current || index < 0 || index >= total) return;
+    transitioning = true;
+    const outgoing = slides[current];
+    const incoming = slides[index];
+
+    resetSlideAnimations(outgoing);
+
+    outgoing.classList.remove('active');
+    outgoing.classList.add('exit');
+    incoming.classList.remove('exit');
+    void incoming.offsetWidth;
+    incoming.classList.add('active');
+    current = index;
+    updateNav();
+
+    resetSlideAnimations(incoming);
+
+    if(incoming.classList.contains('slide-verdict')){
+      verdictTimers.push(setTimeout(() => runVerdictAnimation(incoming), 120));
+    }
+
+    setTimeout(() => { outgoing.classList.remove('exit'); transitioning = false; }, 560);
+  }
+
+  document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+  document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+  dots.forEach(dot => dot.addEventListener('click', () => goTo(parseInt(dot.dataset.index, 10))));
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' '){
+      e.preventDefault(); goTo(current + 1);
+    } else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp'){
+      e.preventDefault(); goTo(current - 1);
+    } else if(e.key === 'Home'){ e.preventDefault(); goTo(0); }
+    else if(e.key === 'End'){ e.preventDefault(); goTo(total - 1); }
+  });
+
+  updateNav();
+  resetSlideAnimations(slides[0]);
+})();
+</script>
+</body>
+</html>
