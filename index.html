@@ -305,7 +305,9 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
 .compare-list li{font-size:16px;line-height:1.5;color:var(--ink-secondary);padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06);display:flex;gap:10px;align-items:flex-start}
 .compare-list li:last-child{border-bottom:none}
 .compare-list .icon{flex-shrink:0;font-weight:700;font-size:15px}
-.slide-compare .slide-body>.panel{margin-top:auto!important}
+.slide-compare .slide-body{justify-content:flex-start;gap:20px}
+.slide-compare .slide-body>.grid-2{flex:1;align-content:center;min-height:0}
+.slide-compare .slide-body>.panel{margin-top:0!important;flex-shrink:0}
 
 /* ── ARCHITECTURE (Slide 6) ── */
 .arch-stack{display:flex;flex-direction:column;gap:3px;width:100%}
@@ -397,7 +399,10 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
 .sev-high{background:#FEE2E2;color:var(--red)}
 .risk-card h4{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px;line-height:1.35}
 .risk-card p{font-size:14px;line-height:1.5;color:var(--ink-muted)}
-.criteria-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:auto}
+.criteria-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.slide-risk .slide-body{justify-content:flex-start}
+.slide-risk .risk-grid{margin-top:auto;margin-bottom:auto}
+.slide-risk .criteria-row{flex-shrink:0}
 .criteria-box{padding:14px 16px;border-radius:6px;border:1px solid var(--line);background:#FFFFFF}
 .criteria-box .type{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
 .criteria-box.kill .type{color:var(--red)}
@@ -421,7 +426,10 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
 .tranche .t-id{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:2px}
 .tranche .t-amt{font-size:15px;font-weight:700;color:var(--ink)}
 .tranche .t-when{font-size:11px;color:var(--ink-muted);margin-top:2px}
-.slide-roadmap .slide-body>.panel{margin-top:auto!important}
+.slide-roadmap .slide-body{justify-content:flex-start}
+.slide-roadmap .roadmap-track{margin-top:auto;margin-bottom:16px}
+.slide-roadmap .tranche-grid{margin-bottom:auto}
+.slide-roadmap .slide-body>.panel{margin-top:0!important;flex-shrink:0}
 
 /* ── VERDICT (Slide 12) ── */
 .slide-verdict .slide-inner{padding-top:44px;padding-bottom:36px}
@@ -501,6 +509,86 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
   .flow{flex-wrap:wrap}
   .roadmap-track{flex-wrap:wrap}
 }
+
+/* ── PRINT / PDF EXPORT ── */
+html.export-capture,html.pdf-export{
+  --export-w:1440px;
+  --export-h:810px;
+}
+html.export-capture body,html.pdf-export body{
+  width:var(--export-w)!important;height:var(--export-h)!important;overflow:hidden!important;background:#fff!important;
+}
+html.export-capture .stage,html.pdf-export .stage{
+  display:block!important;width:var(--export-w)!important;height:var(--export-h)!important;min-height:0!important;background:#fff!important;gap:0!important;padding:0!important;
+}
+html.export-capture .deck,html.pdf-export .deck{
+  width:var(--export-w)!important;height:var(--export-h)!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;overflow:hidden!important;
+}
+html.export-capture .nav,html.pdf-export .nav{display:none!important}
+html.export-capture .slide,html.pdf-export .slide{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+}
+html.export-capture *,html.export-capture *::before,html.export-capture *::after,
+html.pdf-export *,html.pdf-export *::before,html.pdf-export *::after{
+  animation:none!important;transition:none!important;
+}
+html.export-capture .stack-block,html.pdf-export .stack-block{transform:scaleY(1)!important}
+html.export-capture .score-fill,html.pdf-export .score-fill{width:var(--fill-w,100%)!important}
+html.export-capture .vd-draw,html.pdf-export .vd-draw{stroke-dashoffset:0!important}
+html.export-capture .vd-fade,html.pdf-export .vd-fade{opacity:1!important}
+html.export-capture .compare-list .icon,html.pdf-export .compare-list .icon{opacity:1!important;transform:none!important}
+html.export-capture .ro-card,html.export-capture .sev-high,html.export-capture .rm-phase,html.export-capture .tranche,
+html.export-capture .flow-step,html.export-capture .flow-step .flow-num,html.export-capture .slide-solution .metric-box,html.export-capture .key-stat,
+html.pdf-export .ro-card,html.pdf-export .sev-high,html.pdf-export .rm-phase,html.pdf-export .tranche,
+html.pdf-export .flow-step,html.pdf-export .flow-step .flow-num,html.pdf-export .slide-solution .metric-box,html.pdf-export .key-stat{
+  opacity:1!important;transform:none!important;
+}
+html.export-capture .rm-bar,html.pdf-export .rm-bar{transform:scaleX(1)!important}
+html.export-capture .rec-phrase,html.pdf-export .rec-phrase{opacity:1!important;transform:none!important}
+html.export-capture .rec-phrase::after,html.pdf-export .rec-phrase::after{content:none!important}
+html.export-capture h1,html.pdf-export h1{font-size:45px!important}
+html.export-capture h2,html.pdf-export h2{font-size:33px!important}
+html.export-capture .lead,html.pdf-export .lead{font-size:19px!important}
+html.export-capture .stat,html.pdf-export .stat{font-size:39px!important}
+html.export-capture .slide-title h1,html.pdf-export .slide-title h1{font-size:53px!important}
+html.export-capture .metric-box .val,html.pdf-export .metric-box .val{font-size:35px!important}
+html.export-capture .metric-box .val.val-text,html.pdf-export .metric-box .val.val-text{font-size:24px!important}
+
+@media print{
+  @page{size:13.333in 7.5in;margin:0}
+  html,body{width:13.333in!important;height:auto!important;overflow:visible!important;background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .stage{display:block!important;width:13.333in!important;height:auto!important;min-height:0!important;background:#fff!important;gap:0!important;padding:0!important}
+  .deck{width:13.333in!important;height:auto!important;max-width:none!important;box-shadow:none!important;border-radius:0!important;overflow:visible!important}
+  .slides{position:static!important;width:100%!important;height:auto!important}
+  .slide{
+    position:relative!important;inset:auto!important;opacity:1!important;visibility:visible!important;transform:none!important;
+    display:flex!important;flex-direction:column!important;width:13.333in!important;height:7.5in!important;
+    page-break-after:always;break-after:page;overflow:hidden!important;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .slide:last-child{page-break-after:auto;break-after:auto}
+  .nav{display:none!important}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .stack-block{transform:scaleY(1)!important}
+  .score-fill{width:var(--fill-w,100%)!important}
+  .vd-draw{stroke-dashoffset:0!important}
+  .vd-fade{opacity:1!important}
+  .compare-list .icon{opacity:1!important;transform:none!important}
+  .ro-card,.sev-high,.rm-phase,.tranche,.flow-step,.flow-step .flow-num,.slide-solution .metric-box,.key-stat,.panel,.panel-accent,.compare-col,.chain-col,.asym-panel,.risk-card{opacity:1!important;transform:none!important}
+  .rm-bar{transform:scaleX(1)!important}
+  .rec-phrase{opacity:1!important;transform:none!important}
+  .rec-phrase::after{content:none!important}
+  h1{font-size:45px!important}
+  h2{font-size:33px!important}
+  .lead{font-size:19px!important}
+  .stat{font-size:39px!important}
+  .slide-title h1{font-size:53px!important}
+  .metric-box .val{font-size:35px!important}
+  .metric-box .val.val-text{font-size:24px!important}
+  .slide-timeline .timeline-chart{min-height:280px!important}
+  .slide-timeline .timeline-axis{min-height:220px!important}
+}
+.nav-btn-pdf{font-size:13px;font-weight:600;letter-spacing:.02em;width:auto;padding:0 12px;gap:6px}
 </style>
 </head>
 <body>
@@ -516,8 +604,8 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
     <div class="title-rule"></div>
     <h1>AI-Assisted Customisation<br>Reconciliation</h1>
     <p class="lead" style="margin-top:16px">A Decision-Support Capability for Major Version Upgrades of Vendor Core Banking Applications</p>
-    <p class="title-team">Noaman K | Vinayak R | Abhishek J | Prashant C | (Group 1)</p>
-    <p class="title-programme">Batch: Cohort 8 · Programme: DBA in Emerging Technologies · Concentration: Generative AI</p>
+    <p class="title-team">Noaman K | Vinayak R | Abhishek J | Prashant C </p>
+    <p class="title-programme">Group 1 · DBA in Emerging Technologies · GGU</p>
   </div>
 </section>
 
@@ -531,6 +619,7 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
     </div>
     <div class="slide-body">
       <div class="timeline-wrap">
+        
         <div class="timeline-chart">
         <div class="timeline-axis">
           <div class="year-col">
@@ -659,7 +748,7 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
           </ul>
         </div>
       </div>
-      <div class="panel" style="margin-top:20px;text-align:center">
+      <div class="panel" style="text-align:center">
         <p style="font-size:16px;color:var(--ink-secondary);line-height:1.55"><strong style="color:var(--navy)">LLMs cross this gap</strong> — read and reason across code, documentation, and release notes; infer business intent from context; produce structured recommendations with rationale and source citations at volume no consultant team can match.</p>
       </div>
     </div>
@@ -1186,7 +1275,7 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
         <div class="tranche"><div class="t-id">T4 Wave 2</div><div class="t-amt">USD 1.4–2.0M</div><div class="t-when">At G3</div></div>
         <div class="tranche"><div class="t-id">T5+ Waves</div><div class="t-amt">USD 0.8–1.2M</div><div class="t-when">Per wave</div></div>
       </div>
-      <div class="panel" style="margin-top:14px;text-align:center">
+      <div class="panel" style="text-align:center">
         <p class="small"><strong style="color:var(--navy)">USD 9–12M cumulative</strong> · At every gate, the board retains the right to continue, redesign, pause, or terminate · Discovery is the correct first commitment</p>
       </div>
     </div>
@@ -1266,6 +1355,7 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
   <span class="nav-count" id="slideNum">01 / 13</span>
   <div class="nav-dots" id="navDots"></div>
   <div class="nav-btns">
+    <button class="nav-btn nav-btn-pdf" id="pdfBtn" aria-label="Save all slides as PDF" title="Save all slides as PDF">PDF</button>
     <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
     <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
   </div>
@@ -1410,6 +1500,72 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
     setTimeout(run, 580);
   }
 
+  function finalizeSlideStaticState(slide){
+    if(!slide) return;
+    slide.querySelectorAll('.stack-block').forEach(b => {
+      b.style.setProperty('--bar-h', (parseFloat(b.dataset.h || 0) * 0.65) + 'px');
+      b.style.transform = 'scaleY(1)';
+    });
+    if(slide.querySelector('.timeline-wrap')) applyTimelineBars(slide);
+    slide.querySelectorAll('.score-fill').forEach(f => {
+      const w = (f.dataset.w || 0) + '%';
+      f.style.setProperty('--fill-w', w);
+      f.style.width = w;
+    });
+    slide.querySelectorAll('.rec-phrase').forEach(p => {
+      p.textContent = p.dataset.text || '';
+      p.classList.add('visible');
+      p.classList.remove('typing', 'impact', 'impact-primary', 'impact-emphasis');
+    });
+    slide.querySelectorAll('.vd-draw').forEach(el => { el.style.strokeDashoffset = '0'; });
+    slide.querySelectorAll('.vd-fade').forEach(el => { el.style.opacity = '1'; });
+    slide.querySelectorAll('.rm-bar').forEach(el => { el.style.transform = 'scaleX(1)'; });
+    slide.querySelectorAll('.flow-step, .flow-step .flow-num, .metric-box, .ro-card, .sev-high, .rm-phase, .tranche, .compare-list .icon, .key-stat, .panel, .panel-accent, .compare-col, .chain-col, .asym-panel, .risk-card').forEach(el => {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+      el.style.animation = 'none';
+    });
+  }
+
+  function prepareAllSlidesForPrint(){
+    document.documentElement.classList.add('pdf-export');
+    slides.forEach(slide => {
+      slide.classList.add('active');
+      slide.classList.remove('exit');
+      finalizeSlideStaticState(slide);
+    });
+    slides.forEach(slide => {
+      if(slide.querySelector('.timeline-wrap')) applyTimelineBars(slide);
+    });
+  }
+
+  function showSlideForExport(index){
+    if(index < 0 || index >= total) return false;
+    document.documentElement.classList.add('export-capture');
+    document.documentElement.classList.remove('pdf-export');
+    slides.forEach((slide, i) => {
+      slide.classList.toggle('active', i === index);
+      slide.classList.remove('exit');
+    });
+    current = index;
+    const slide = slides[index];
+    finalizeSlideStaticState(slide);
+    if(slide.classList.contains('slide-timeline')){
+      applyTimelineBars(slide);
+      requestAnimationFrame(() => applyTimelineBars(slide));
+    }
+    return true;
+  }
+
+  function restoreAfterPrint(){
+    document.documentElement.classList.remove('pdf-export', 'export-capture');
+    slides.forEach((slide, i) => {
+      slide.classList.toggle('active', i === current);
+      slide.classList.remove('exit');
+    });
+    resetSlideAnimations(slides[current]);
+  }
+
   function resetSlideAnimations(slide){
     if(!slide) return;
     clearVerdictAnimation(slide);
@@ -1468,7 +1624,11 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
 
   document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
   document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('pdfBtn').addEventListener('click', () => window.print());
   dots.forEach(dot => dot.addEventListener('click', () => goTo(parseInt(dot.dataset.index, 10))));
+
+  window.addEventListener('beforeprint', prepareAllSlidesForPrint);
+  window.addEventListener('afterprint', restoreAfterPrint);
 
   document.addEventListener('keydown', e => {
     if(e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' '){
@@ -1486,6 +1646,24 @@ h2{font-size:clamp(25px,2.1vw,33px);font-weight:700;line-height:1.25;color:var(-
     const active = slides[current];
     if(active?.classList.contains('slide-timeline')) scheduleTimelineBars(active);
   });
+
+  if(new URLSearchParams(location.search).get('export') === 'pdf'){
+    window.addEventListener('load', () => {
+      document.fonts.ready.then(() => {
+        document.body.dataset.pdfReady = '1';
+      });
+    });
+  }
+
+  window.deckExport = {
+    total,
+    showSlide: showSlideForExport,
+    reflowTimeline(index){
+      const slide = slides[index];
+      if(slide?.querySelector('.timeline-wrap')) applyTimelineBars(slide);
+    },
+    prepareAll: prepareAllSlidesForPrint
+  };
 })();
 </script>
 </body>
